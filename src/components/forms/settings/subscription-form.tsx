@@ -1,59 +1,25 @@
-'use client'
-import { Loader } from '@/components/loader'
-import { StripeElements } from '@/components/settings/stripe-elements'
-import SubscriptionCard from '@/components/settings/subscription-card'
-import { Button } from '@/components/ui/button'
-import { useSubscriptions } from '@/hooks/billing/use-billing'
-import React from 'react'
+"use client";
+import React from "react";
 
-type Props = {
-  plan: 'STANDARD' | 'PRO' | 'ULTIMATE'
-}
-
-const SubscriptionForm = ({ plan }: Props) => {
-  const { loading, onSetPayment, payment, onUpdatetToFreTier } =
-    useSubscriptions(plan)
-
+const SubscriptionForm = () => {
   return (
-    <Loader loading={loading}>
-      <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-3">
-          <SubscriptionCard
-            title="STANDARD"
-            description="Perfect if you’re just getting started with SmartRep AI"
-            price="0"
-            payment={payment}
-            onPayment={onSetPayment}
-            id="STANDARD"
-          />
-
-          <SubscriptionCard
-            title="PRO"
-            description="Perfect if you’re just getting started with SmartRep AI"
-            price="15"
-            payment={payment}
-            onPayment={onSetPayment}
-            id="PRO"
-          />
-
-          <SubscriptionCard
-            title="ULTIMATE"
-            description="Perfect if you’re just getting started with SmartRep AI"
-            price="35"
-            payment={payment}
-            onPayment={onSetPayment}
-            id="ULTIMATE"
-          />
-        </div>
-        <StripeElements payment={payment} />
-        {payment === 'STANDARD' && (
-          <Button onClick={onUpdatetToFreTier}>
-            <Loader loading={loading}>Confirm</Loader>
-          </Button>
-        )}
+    <div className="flex flex-col gap-5">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold">All Features Included</h2>
+        <p className="text-gray-600 mt-2">
+          You have full access to all SmartRep AI features:
+        </p>
+        <ul className="mt-4 text-left list-disc pl-6">
+          <li>Unlimited domains</li>
+          <li>Unlimited contacts</li>
+          <li>Unlimited emails per month</li>
+          <li>All premium features</li>
+          <li>Priority support</li>
+          <li>Advanced analytics</li>
+        </ul>
       </div>
-    </Loader>
-  )
-}
+    </div>
+  );
+};
 
-export default SubscriptionForm
+export default SubscriptionForm;
