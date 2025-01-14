@@ -20,6 +20,7 @@ import Link from "next/link";
 import parse from "html-react-parser";
 import { getMonthName } from "@/lib/utils";
 import Contact from "@/components/contact";
+import ChatbotIframe from "./ChatbotIframe";
 
 export default async function Home() {
   return (
@@ -343,6 +344,7 @@ export default async function Home() {
       </section> */}
       <Contact />
       <Footer />
+      <ChatbotIframe />
     </main>
   );
 }
