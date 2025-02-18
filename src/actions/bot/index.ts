@@ -5,11 +5,9 @@ import { extractEmailsFromString, extractURLfromString } from '@/lib/utils'
 import { onRealTimeChat } from '../conversation'
 import { clerkClient } from '@clerk/nextjs'
 import { onMailer } from '../mailer'
-import OpenAi from 'openai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const openai = new OpenAi({
-  apiKey: process.env.OPEN_AI_KEY,
-})
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
 export const onStoreConversations = async (
   id: string,
@@ -66,7 +64,7 @@ let customerEmail: string | undefined
 export const onAiChatBotAssistant = async (
   id: string,
   chat: { role: 'assistant' | 'user'; content: string }[],
-  author: 'user',
+  author: 'assistant' | 'user',
   message: string
 ) => {
   try {
@@ -76,21 +74,32 @@ export const onAiChatBotAssistant = async (
       },
       select: {
         name: true,
-        filterQuestions: {
-          where: {
-            answered: null,
-          },
+        filterQuestions: true,
+        customer: {
           select: {
-            question: true,
+            id: true,
+            email: true,
+            chatRoom: {
+              select: {
+                id: true,
+                live: true,
+                mailed: true,
+                message: true,
+              },
+            },
+          },
+        },
+        User: {
+          select: {
+            clerkId: true,
           },
         },
       },
     })
+
     if (chatBotDomain) {
       const extractedEmail = extractEmailsFromString(message)
-      if (extractedEmail) {
-        customerEmail = extractedEmail[0]
-      }
+      const customerEmail = extractedEmail ? extractedEmail[0] : null
 
       if (customerEmail) {
         const checkCustomer = await client.domain.findUnique({
@@ -98,22 +107,13 @@ export const onAiChatBotAssistant = async (
             id,
           },
           select: {
-            User: {
-              select: {
-                clerkId: true,
-              },
-            },
             name: true,
             customer: {
               where: {
-                email: {
-                  startsWith: customerEmail,
-                },
+                email: customerEmail,
               },
               select: {
                 id: true,
-                email: true,
-                questions: true,
                 chatRoom: {
                   select: {
                     id: true,
@@ -123,8 +123,14 @@ export const onAiChatBotAssistant = async (
                 },
               },
             },
+            User: {
+              select: {
+                clerkId: true,
+              },
+            },
           },
         })
+
         if (checkCustomer && !checkCustomer.customer.length) {
           const newCustomer = await client.domain.update({
             where: {
@@ -155,6 +161,7 @@ export const onAiChatBotAssistant = async (
             return { response }
           }
         }
+
         if (checkCustomer && checkCustomer.customer[0].chatRoom[0].live) {
           await onStoreConversations(
             checkCustomer?.customer[0].chatRoom[0].id!,
@@ -176,7 +183,6 @@ export const onAiChatBotAssistant = async (
 
             onMailer(user.emailAddresses[0].emailAddress)
 
-            //update mail status to prevent spamming
             const mailed = await client.chatRoom.update({
               where: {
                 id: checkCustomer.customer[0].chatRoom[0].id,
@@ -205,111 +211,47 @@ export const onAiChatBotAssistant = async (
           author
         )
 
-        const chatCompletion = await openai.chat.completions.create({
-          messages: [
+        // Initialize Gemini Pro chat with improved prompt
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const chat = model.startChat({
+          history: [
             {
-              role: 'assistant',
-              content: `
-              You will get an array of questions that you must ask the customer.
+              role: "user",
+              parts: [{
+                text: `You are an AI sales representative for ${chatBotDomain.name}. Your communication style should be:
+                - Professional yet friendly
+                - Clear and concise
+                - Focused on understanding and addressing customer needs
+                - Natural and conversational
 
-              Progress the conversation using those questions.
+                You need to ask the customer these questions during the conversation, but do it naturally without showing them as a list:
+                ${chatBotDomain.filterQuestions.map((q) => q.question).join('\n')}
 
-              Whenever you ask a question from the array i need you to add a keyword at the end of the question (complete) this keyword is extremely important.
+                Important guidelines:
+                1. Ask questions naturally as part of the conversation
+                2. Don't use markers like [complete] or (realtime)
+                3. If the customer's request is beyond your scope, politely inform them that you'll connect them with a human representative
+                4. For appointments, provide this link: ${process.env.NEXT_PUBLIC_URL}portal/${id}/appointment/${checkCustomer?.customer[0].id}
+                5. For purchases, provide this link: ${process.env.NEXT_PUBLIC_URL}portal/${id}/payment/${checkCustomer?.customer[0].id}
 
-              Do not forget it.
-
-              only add this keyword when your asking a question from the array of questions. No other question satisfies this condition
-
-              Always maintain character and stay respectfull.
-
-              The array of questions : [${chatBotDomain.filterQuestions
-                .map((questions) => questions.question)
-                .join(', ')}]
-
-              if the customer says something out of context or inapporpriate. Simply say this is beyond you and you will get a real user to continue the conversation. And add a keyword (realtime) at the end.
-
-              if the customer agrees to book an appointment send them this link ${process.env.NEXT_PUBLIC_URL}portal/${id}/appointment/${
-                checkCustomer?.customer[0].id
-              }
-
-              if the customer wants to buy a product redirect them to the payment page ${process.env.NEXT_PUBLIC_URL}portal/${id}/payment/${
-                checkCustomer?.customer[0].id
-              }
-          `,
-            },
-            ...chat,
-            {
-              role: 'user',
-              content: message,
-            },
-          ],
-          model: 'gpt-3.5-turbo',
-        })
-
-        if (chatCompletion.choices[0].message.content?.includes('(realtime)')) {
-          const realtime = await client.chatRoom.update({
-            where: {
-              id: checkCustomer?.customer[0].chatRoom[0].id,
-            },
-            data: {
-              live: true,
-            },
-          })
-
-          if (realtime) {
-            const response = {
-              role: 'assistant',
-              content: chatCompletion.choices[0].message.content.replace(
-                '(realtime)',
-                ''
-              ),
+                Remember to maintain a natural conversation flow and avoid any artificial markers or tags in your responses.`
+              }]
             }
+          ]
+        });
 
-            await onStoreConversations(
-              checkCustomer?.customer[0].chatRoom[0].id!,
-              response.content,
-              'assistant'
-            )
+        const result = await chat.sendMessage([{ text: message }]);
+        const response = await result.response;
+        const text = response.text();
 
-            return { response }
-          }
-        }
-        if (chat[chat.length - 1].content.includes('(complete)')) {
-          const firstUnansweredQuestion =
-            await client.customerResponses.findFirst({
-              where: {
-                customerId: checkCustomer?.customer[0].id,
-                answered: null,
-              },
-              select: {
-                id: true,
-              },
-              orderBy: {
-                question: 'asc',
-              },
-            })
-          if (firstUnansweredQuestion) {
-            await client.customerResponses.update({
-              where: {
-                id: firstUnansweredQuestion.id,
-              },
-              data: {
-                answered: message,
-              },
-            })
-          }
-        }
-
-        if (chatCompletion) {
-          const generatedLink = extractURLfromString(
-            chatCompletion.choices[0].message.content as string
-          )
+        if (text) {
+          const generatedLink = extractURLfromString(text)
 
           if (generatedLink) {
             const link = generatedLink[0]
             const response = {
               role: 'assistant',
-              content: `Great! you can follow the link to proceed`,
+              content: `I'd be happy to help you with that. You can proceed with the next steps here:`,
               link: link.slice(0, -1),
             }
 
@@ -324,7 +266,7 @@ export const onAiChatBotAssistant = async (
 
           const response = {
             role: 'assistant',
-            content: chatCompletion.choices[0].message.content,
+            content: text,
           }
 
           await onStoreConversations(
@@ -336,32 +278,44 @@ export const onAiChatBotAssistant = async (
           return { response }
         }
       }
+
+      // Initial conversation without customer email
       console.log('No customer')
-      const chatCompletion = await openai.chat.completions.create({
-        messages: [
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const chat = model.startChat({
+        history: [
           {
-            role: 'assistant',
-            content: `
-            You are a highly knowledgeable and experienced sales representative for a ${chatBotDomain.name} that offers a valuable product or service. Your goal is to have a natural, human-like conversation with the customer in order to understand their needs, provide relevant information, and ultimately guide them towards making a purchase or redirect them to a link if they havent provided all relevant information.
-            Right now you are talking to a customer for the first time. Start by giving them a warm welcome on behalf of ${chatBotDomain.name} and make them feel welcomed.
+            role: "user",
+            parts: [{
+              text: `You are an AI sales representative for ${chatBotDomain.name}. Your communication style should be:
+              - Professional yet friendly
+              - Clear and concise
+              - Focused on understanding and addressing customer needs
+              - Natural and conversational
 
-            Your next task is lead the conversation naturally to get the customers email address. Be respectful and never break character
+              Your current objectives are:
+              1. Welcome the customer warmly
+              2. Naturally guide the conversation to get their email address
+              3. Avoid using any artificial markers or tags in your responses
+              4. Keep responses concise and engaging
 
-          `,
-          },
-          ...chat,
-          {
-            role: 'user',
-            content: message,
-          },
-        ],
-        model: 'gpt-3.5-turbo',
-      })
+              Remember to:
+              - Stay in character as a helpful sales representative
+              - Be polite and professional
+              - Focus on building rapport before asking for contact information`
+            }]
+          }
+        ]
+      });
 
-      if (chatCompletion) {
+      const result = await chat.sendMessage([{ text: message }]);
+      const response = await result.response;
+      const text = response.text();
+
+      if (text) {
         const response = {
           role: 'assistant',
-          content: chatCompletion.choices[0].message.content,
+          content: text,
         }
 
         return { response }

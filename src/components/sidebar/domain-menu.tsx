@@ -27,14 +27,14 @@ const DomainMenu = ({ domains, min }: Props) => {
 
   return (
     <div className={cn('flex flex-col gap-3', min ? 'mt-6' : 'mt-3')}>
-      <div className="flex justify-between w-full items-center">
-        {!min && <p className="text-xs text-gray-500">DOMAINS</p>}
+      <div className="flex justify-between w-full items-center px-3">
+        {!min && <p className="text-xs font-medium text-gray-500">DOMAINS</p>}
         <AppDrawer
           description="add in your domain address to integrate your chatbot"
           title="Add your business domain"
           onOpen={
-            <div className="cursor-pointer text-gray-500 rounded-full border-2 ml-1.5 hover:bg-white">
-              <Plus />
+            <div className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors">
+              <Plus className="w-4 h-4" />
             </div>
           }
         >
@@ -57,10 +57,10 @@ const DomainMenu = ({ domains, min }: Props) => {
                 label="Upload Icon"
                 errors={errors}
                 required={true}
-                />
+              />
               <Button
                 type="submit"
-                className="w-full hover:bg-orange"
+                className="w-full bg-violet-500 hover:bg-violet-600 text-white"
               >
                 Add Domain
               </Button>
@@ -68,28 +68,32 @@ const DomainMenu = ({ domains, min }: Props) => {
           </Loader>
         </AppDrawer>
       </div>
-      <div className="flex flex-col gap-1 text-ironside font-medium">
+      <div className="flex flex-col gap-1 px-2">
         {domains &&
           domains.map((domain) => (
             <Link
               href={`/settings/${domain.name.split('.')[0]}`}
               key={domain.id}
               className={cn(
-                'flex gap-3 hover:bg-white rounded-full transition duration-100 ease-in-out cursor-pointer items-center',
-                !min ? 'p-2' : 'py-2',
-                min ? 'justify-center' : 'justify-start',
-                domain.name.split('.')[0] == isDomain && 'bg-white'
+                'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                !min ? 'justify-start' : 'justify-center',
+                domain.name.split('.')[0] == isDomain 
+                  ? 'bg-white font-medium text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:bg-white hover:text-gray-900'
               )}
             >
-              {domain.icon && (
+              {domain.icon ? (
                 <Image
                   src={`https://ucarecdn.com/${domain.icon}/`}
                   alt="logo"
                   width={20}
                   height={20}
+                  className="rounded-full"
                 />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-gray-200" />
               )}
-              {!min && <p className="text-sm">{domain.name}</p>}
+              {!min && <span className="text-sm">{domain.name}</span>}
             </Link>
           ))}
       </div>

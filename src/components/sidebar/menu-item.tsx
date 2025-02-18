@@ -18,16 +18,19 @@ const MenuItem = ({ size, path, icon, label, current, onSignOut }: Props) => {
         <Link
           onClick={onSignOut}
           className={cn(
-            'flex items-center gap-2 px-1 py-2 rounded-lg my-1 hover:bg-white',
+            'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
             !current
-              ? 'text-gray-500'
+              ? 'text-gray-600 hover:bg-white hover:text-gray-900'
               : current == path
-              ? 'bg-white font-bold text-black'
-              : 'text-gray-500'
+              ? 'bg-white font-medium text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:bg-white hover:text-gray-900'
           )}
           href={path ? `/${path}` : '#'}
         >
-          {icon} {label}
+          <div className="w-5 h-5">
+            {icon}
+          </div>
+          <span className="text-sm">{label}</span>
         </Link>
       )
     case 'min':
@@ -35,18 +38,18 @@ const MenuItem = ({ size, path, icon, label, current, onSignOut }: Props) => {
         <Link
           onClick={onSignOut}
           className={cn(
-            'flex items-center gap-2 px-1 py-2 rounded-lg my-1 hover:bg-white',
-
+            'flex items-center justify-center p-2 rounded-lg transition-colors',
             !current
-              ? 'text-gray-500'
+              ? 'text-gray-600 hover:bg-white hover:text-gray-900'
               : current == path
-              ? 'bg-white font-bold text-black'
-              : 'text-gray-500',
-            'rounded-lg px-2 py-2 my-1'
+              ? 'bg-white font-medium text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:bg-white hover:text-gray-900'
           )}
           href={path ? `/${path}` : '#'}
         >
-          {icon}
+          <div className="w-5 h-5">
+            {icon}
+          </div>
         </Link>
       )
     default:

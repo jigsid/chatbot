@@ -21,33 +21,26 @@ type Props = {
 
 const MaxMenu = ({ current, domains, onExpand, onSignOut }: Props) => {
   return (
-    <div className="px-2 flex flex-col h-full">
-      <div className="flex justify-between items-center -ml-5">
-        <Image
-          src="/logo.png"
-          alt="LOGO"
-          sizes="100vw"
-          className="animate-fade-in opacity-0 delay-300 fill-mode-forwards"
-          style={{
-            width: '30%',
-            height: 'auto',
-          }}
-          width={0}
-          height={0}
-        />
-        <Link href="/">
-        <span className="text-xl font-bold -ml-[4rem]">
-          Smart<span className="text-orange">Rep</span> AI
-        </span>
-        </Link>
+    <div className="px-4 flex flex-col h-full">
+      <div className="flex justify-between items-center py-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-violet-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-violet-500/20">
+            SR
+          </div>
+          <Link href="/">
+            <span className="text-lg font-semibold text-gray-900">
+              Smart<span className="text-violet-500">Rep</span> AI
+            </span>
+          </Link>
+        </div>
         <Menu
-          className="cursor-pointer animate-fade-in opacity-0 delay-300 fill-mode-forwards"
+          className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors w-5 h-5"
           onClick={onExpand}
         />
       </div>
-      <div className="animate-fade-in opacity-0 delay-300 fill-mode-forwards flex flex-col justify-between h-full">
+      <div className="flex flex-col justify-between h-full pt-4">
         <div className="flex flex-col justify-start">
-          <p className="text-xs text-gray-500 mb-3">MENU</p>
+          <p className="text-xs font-medium text-gray-500 mb-2 px-3">MENU</p>
           {SIDE_BAR_MENU.map((menu, key) => (
             <MenuItem
               size="max"
@@ -58,18 +51,18 @@ const MaxMenu = ({ current, domains, onExpand, onSignOut }: Props) => {
           ))}
           <DomainMenu domains={domains} />
         </div>
-        <div className="flex flex-col">
-          <p className="text-xs text-gray-500 mb-3">OPTIONS</p>
+        <div className="flex flex-col pb-4">
+          <p className="text-xs font-medium text-gray-500 mb-2 px-3">OPTIONS</p>
           <MenuItem
             size="max"
             label="Sign out"
-            icon={<LogOut />}
+            icon={<LogOut className="w-5 h-5" />}
             onSignOut={onSignOut}
           />
           <MenuItem
             size="max"
             label="Mobile App"
-            icon={<MonitorSmartphone />}
+            icon={<MonitorSmartphone className="w-5 h-5" />}
           />
         </div>
       </div>

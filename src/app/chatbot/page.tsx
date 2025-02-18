@@ -1,10 +1,10 @@
 import AiChatBot from '@/components/chatbot'
 import React from 'react'
 
-type Props = {}
-
-const ChatBot = (props: Props) => {
-  return <AiChatBot />
+export default function ChatBot() {
+  return (
+    <div className="w-full h-screen bg-transparent">
+      <AiChatBot />
+    </div>
+  )
 }
-
-export default ChatBot
