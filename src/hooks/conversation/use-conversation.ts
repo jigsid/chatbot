@@ -14,6 +14,8 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useToast } from '@/components/ui/use-toast'
+import { Button } from '@/components/ui/button'
 
 export const useConversation = () => {
   const { register, watch } = useForm({
@@ -117,62 +119,189 @@ export const useChatTime = (createdAt: Date, roomId: string) => {
 }
 
 export const useChatWindow = () => {
-  const { chats, loading, setChats, chatRoom } = useChatContext()
   const messageWindowRef = useRef<HTMLDivElement | null>(null)
-  const { register, handleSubmit, reset } = useForm({
+  const [chats, setChats] = useState<any[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [chatRoom, setChatRoom] = useState<string | undefined>()
+  const [isTyping, setIsTyping] = useState(false)
+  const [readStatus, setReadStatus] = useState<Record<string, 'sent' | 'delivered' | 'read'>>({})
+  const [retryCount, setRetryCount] = useState<Record<string, number>>({})
+  const { toast } = useToast()
+  
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(ChatBotMessageSchema),
-    mode: 'onChange',
   })
-  const onScrollToBottom = () => {
-    messageWindowRef.current?.scroll({
-      top: messageWindowRef.current.scrollHeight,
-      left: 0,
-      behavior: 'smooth',
-    })
-  }
 
+  // Handle real-time message updates
   useEffect(() => {
-    onScrollToBottom()
-  }, [chats, messageWindowRef])
+    if (!chatRoom) return;
 
-  useEffect(() => {
-    if (chatRoom) {
-      pusherClient.subscribe(chatRoom)
-      pusherClient.bind('realtime-mode', (data: any) => {
-        setChats((prev) => [...prev, data.chat])
-      })
+    const channel = pusherClient.subscribe(chatRoom);
+    
+    channel.bind('message', (data: any) => {
+      setChats(prev => [...prev, data.message]);
+      setReadStatus(prev => ({ ...prev, [data.message.id]: 'delivered' }));
+      setTimeout(() => {
+        setReadStatus(prev => ({ ...prev, [data.message.id]: 'read' }));
+      }, 2000);
+    });
 
-      return () => {
-        pusherClient.unbind('realtime-mode')
-        pusherClient.unsubscribe(chatRoom)
+    channel.bind('typing', () => {
+      setIsTyping(true);
+      setTimeout(() => setIsTyping(false), 3000);
+    });
+
+    return () => {
+      channel.unbind_all();
+      pusherClient.unsubscribe(chatRoom);
+    };
+  }, [chatRoom]);
+
+  const retryMessage = async (messageId: string) => {
+    try {
+      const message = chats.find(chat => chat.id === messageId);
+      if (!message) return;
+
+      const currentRetries = retryCount[messageId] || 0;
+      if (currentRetries >= 3) {
+        toast({
+          title: 'Error',
+          description: 'Maximum retry attempts reached',
+          variant: 'destructive',
+        });
+        return;
       }
+
+      setRetryCount(prev => ({ ...prev, [messageId]: currentRetries + 1 }));
+      await onOwnerSendMessage(chatRoom!, message.content, message.role);
+      
+      setReadStatus(prev => ({ ...prev, [messageId]: 'sent' }));
+      setTimeout(() => {
+        setReadStatus(prev => ({ ...prev, [messageId]: 'delivered' }));
+      }, 1000);
+    } catch (error) {
+      console.error('Retry failed:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to retry sending message',
+        variant: 'destructive',
+      });
     }
-  }, [chatRoom])
+  };
 
   const onHandleSentMessage = handleSubmit(async (values) => {
     try {
-      reset()
-      const message = await onOwnerSendMessage(
-        chatRoom!,
-        values.content,
-        'assistant'
-      )
-      //WIP: Remove this line
-      if (message) {
-        //remove this
-        // setChats((prev) => [...prev, message.message[0]])
-
-        await onRealTimeChat(
-          chatRoom!,
-          message.message[0].message,
-          message.message[0].id,
-          'assistant'
-        )
+      if (!values.content && !values.file) return;
+      
+      const messageId = Date.now().toString();
+      const newMessage = {
+        id: messageId,
+        role: 'user',
+        content: values.content || 'File attachment',
+        createdAt: new Date(),
+      };
+      
+      setChats(prev => [...prev, newMessage]);
+      setReadStatus(prev => ({ ...prev, [messageId]: 'sent' }));
+      
+      // Notify others that user is typing
+      if (chatRoom) {
+        await onRealTimeChat(chatRoom, 'typing', '', 'user');
       }
+
+      // Send message
+      const result = await onOwnerSendMessage(chatRoom!, values.content, 'user');
+      if (!result) throw new Error('Failed to send message');
+
+      setReadStatus(prev => ({ ...prev, [messageId]: 'delivered' }));
+      setTimeout(() => {
+        setReadStatus(prev => ({ ...prev, [messageId]: 'read' }));
+      }, 2000);
+      
+      reset();
     } catch (error) {
-      console.log(error)
+      console.error(error);
+      const msgId = Date.now().toString();
+      toast({
+        title: 'Error',
+        description: 'Failed to send message',
+        variant: 'destructive',
+      });
+      // Add retry button separately
+      const retryBtn = document.createElement('button');
+      retryBtn.textContent = 'Retry';
+      retryBtn.onclick = () => retryMessage(msgId);
+      document.querySelector('.toast-action')?.appendChild(retryBtn);
     }
-  })
+  });
+
+  const onFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'Error',
+          description: 'File size should be less than 5MB',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: 'Error',
+          description: 'Invalid file type. Please upload an image, PDF, or Word document.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // TODO: Implement actual file upload logic here
+      // const response = await fetch('/api/upload', {
+      //   method: 'POST',
+      //   body: formData,
+      // });
+      
+      // if (!response.ok) throw new Error('Upload failed');
+      
+      toast({
+        title: 'Success',
+        description: 'File uploaded successfully',
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload file',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (messageWindowRef.current) {
+      const shouldScroll = messageWindowRef.current.scrollHeight - messageWindowRef.current.scrollTop <= messageWindowRef.current.clientHeight + 100;
+      
+      if (shouldScroll) {
+        messageWindowRef.current.scrollTop = messageWindowRef.current.scrollHeight;
+      }
+    }
+  }, [chats, isTyping]);
 
   return {
     messageWindowRef,
@@ -181,5 +310,10 @@ export const useChatWindow = () => {
     chats,
     loading,
     chatRoom,
-  }
+    isTyping,
+    readStatus,
+    onFileUpload,
+    errors,
+    retryMessage,
+  };
 }

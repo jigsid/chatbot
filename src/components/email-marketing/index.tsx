@@ -12,6 +12,7 @@ import { cn, getMonthName } from '@/lib/utils'
 import CalIcon from '@/icons/cal-icon'
 import PersonIcon from '@/icons/person-icon'
 import { EditEmail } from './edit-email'
+import EmailAnalytics from './analytics'
 
 type Props = {
   domains: {
@@ -28,6 +29,13 @@ type Props = {
     id: string
     customers: string[]
     createdAt: Date
+    analytics?: {
+      sent: number
+      delivered: number
+      opened: number
+      clicked: number
+      bounced: number
+    }
   }[]
   subscription: {
     plan: 'STANDARD' | 'PRO' | 'ULTIMATE'
@@ -65,8 +73,8 @@ const EmailMarketing = ({ campaign, domains, subscription }: Props) => {
         select={isSelected}
         id={isId}
       />
-      <div>
-        <div className="flex flex-col sm:flex-row gap-3 justify-end mb-4">
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3 justify-end">
           <Button
             disabled={isSelected.length == 0}
             onClick={onAddCustomersToCampaign}
@@ -80,7 +88,7 @@ const EmailMarketing = ({ campaign, domains, subscription }: Props) => {
             trigger={
               <Card className="flex gap-2 items-center px-3 cursor-pointer text-sm w-full sm:w-auto hover:bg-accent">
                 <Loader loading={false}>
-                  <Plus /> <span className='p-3 md:p-0 ' >Create Campaign </span>
+                  <Plus /> <span className='p-3 md:p-0'>Create Campaign</span>
                 </Loader>
               </Card>
             }
@@ -89,14 +97,17 @@ const EmailMarketing = ({ campaign, domains, subscription }: Props) => {
               className="flex flex-col gap-4"
               onSubmit={onCreateCampaign}
             >
-              <FormGenerator
-                name="name"
-                register={register}
-                errors={errors}
-                inputType="input"
-                placeholder="Your campaign name"
-                type="text"
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Campaign Name</label>
+                <input
+                  {...register('name')}
+                  className="w-full p-2 border rounded"
+                  placeholder="Your campaign name"
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-sm">{errors.name.message as string}</p>
+                )}
+              </div>
               <Button
                 className="w-full hover:bg-orange"
                 disabled={loading}
@@ -112,19 +123,18 @@ const EmailMarketing = ({ campaign, domains, subscription }: Props) => {
             </CardDescription>
           </Card>
         </div>
-        <div className="flex flex-col items-center lg:items-end mt-5 gap-3">
+        <div className="flex flex-col items-center lg:items-end gap-3">
           {campaign &&
-            campaign.map((camp, i) => (
+            campaign.map((camp) => (
               <Card
                 key={camp.id}
                 className={cn(
-                  'p-5 w-full cursor-pointer',
+                  'p-5 w-full',
                   campaignId == camp.id ? 'bg-gray-50' : ''
                 )}
-                onClick={() => onSelectCampaign(camp.id)}
               >
                 <Loader loading={processing}>
-                  <CardContent className="p-0 flex flex-col items-center gap-3">
+                  <CardContent className="p-0 flex flex-col gap-4">
                     <div className="flex w-full justify-between items-center">
                       <div className="flex gap-2 items-center">
                         <CalIcon />
@@ -163,17 +173,18 @@ const EmailMarketing = ({ campaign, domains, subscription }: Props) => {
                         <Button
                           variant="default"
                           className="rounded-lg"
-                          onClick={() =>
-                            onBulkEmail(
-                              campaign[i].customers.map((c) => c),
-                              camp.id
-                            )
-                          }
+                          onClick={() => onBulkEmail(camp.customers, camp.id)}
                         >
                           Send
                         </Button>
                       </div>
                     </div>
+                    {camp.analytics && (
+                      <EmailAnalytics
+                        campaignId={camp.id}
+                        analytics={camp.analytics}
+                      />
+                    )}
                   </CardContent>
                 </Loader>
               </Card>

@@ -36,9 +36,9 @@ const PortalForm = ({
   type,
   customerId,
   domainid,
+  email,
   bookings,
   products,
-  email,
   amount,
   stripeId,
 }: PortalFormProps) => {
@@ -48,40 +48,37 @@ const PortalForm = ({
     onPrev,
     register,
     errors,
+    loading,
+    onBookAppointment,
     date,
     setDate,
-    onBookAppointment,
     onSelectedTimeSlot,
     selectedSlot,
-    loading,
   } = usePortal(customerId, domainid, email)
 
   useEffect(() => {
-    if (questions.every((question) => question.answered)) {
-      onNext()
+    if (step == 3) {
+      onBookAppointment()
     }
-  }, [])
+  }, [step])
 
   return (
-    <form
-      className="h-full flex flex-col gap-10 justify-center"
-      onSubmit={onBookAppointment}
-    >
+    <form onSubmit={onNext}>
       <PortalSteps
+        step={step}
+        type={type}
+        questions={questions}
+        register={register}
+        errors={errors}
+        onNext={onNext}
+        onBack={onPrev}
         loading={loading}
         slot={selectedSlot}
         bookings={bookings}
         onSlot={onSelectedTimeSlot}
         date={date}
         onBooking={setDate}
-        step={step}
-        type={type}
-        questions={questions}
-        error={errors}
-        register={register}
-        onNext={onNext}
         products={products}
-        onBack={onPrev}
         amount={amount}
         stripeId={stripeId}
       />

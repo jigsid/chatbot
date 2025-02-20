@@ -11,11 +11,11 @@ type Props = {
     answered: string | null
   }[]
   register: UseFormRegister<FieldValues>
-  error: FieldErrors<FieldValues>
+  errors: FieldErrors<FieldValues>
   onNext(): void
 }
 
-const QuestionsForm = ({ questions, register, error, onNext }: Props) => {
+const QuestionsForm = ({ questions, register, errors, onNext }: Props) => {
   return (
     <div className="flex flex-col gap-5 justify-center">
       <div className="flex justify-center">
@@ -26,7 +26,7 @@ const QuestionsForm = ({ questions, register, error, onNext }: Props) => {
           defaultValue={question.answered || ''}
           key={question.id}
           name={`question-${question.id}`}
-          errors={error}
+          errors={errors}
           register={register}
           label={question.question}
           type="text"

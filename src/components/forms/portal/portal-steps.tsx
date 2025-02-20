@@ -1,32 +1,33 @@
 import React from 'react'
 import { FieldErrors, FieldValues, UseFormRegister } from 'react-hook-form'
-import QuestionsForm from './questions'
 import BookAppointmentDate from './booking-date'
 import PaymentCheckout from './product-checkout'
+import QuestionsForm from './questions'
+import { RecurrencePattern, CalendarProvider } from '@/types/appointment'
 
 type Props = {
+  step: number
   questions: {
     id: string
     question: string
     answered: string | null
   }[]
-  type: 'Appointment' | 'Payment'
   register: UseFormRegister<FieldValues>
-  error: FieldErrors<FieldValues>
-  onNext(): void
-  step: number
+  errors: FieldErrors<FieldValues>
+  type: 'Appointment' | 'Payment'
   date: Date | undefined
   onBooking: React.Dispatch<React.SetStateAction<Date | undefined>>
-  onBack(): void
+  slot: string | undefined
   onSlot(slot: string): void
-  slot?: string
   loading: boolean
-  bookings?:
+  bookings:
     | {
         date: Date
         slot: string
       }[]
     | undefined
+  onBack(): void
+  onNext(): void
   products?:
     | {
         name: string
@@ -39,30 +40,34 @@ type Props = {
 }
 
 const PortalSteps = ({
-  questions,
-  type,
-  register,
-  error,
-  onNext,
   step,
-  onBooking,
+  questions,
+  register,
+  errors,
+  type,
   date,
-  onBack,
+  onBooking,
+  slot,
   onSlot,
   loading,
-  slot,
-  products,
   bookings,
+  onBack,
+  onNext,
+  products,
   amount,
   stripeId,
 }: Props) => {
+  const [recurrence, setRecurrence] = React.useState<RecurrencePattern>();
+  const [calendarProvider, setCalendarProvider] = React.useState<CalendarProvider['type']>();
+  const [reminderTiming, setReminderTiming] = React.useState<number>(30);
+
   if (step == 1) {
     return (
       <QuestionsForm
-        register={register}
-        error={error}
-        onNext={onNext}
         questions={questions}
+        register={register}
+        errors={errors}
+        onNext={onNext}
       />
     )
   }
@@ -78,32 +83,26 @@ const PortalSteps = ({
         onBooking={onBooking}
         onSlot={onSlot}
         loading={loading}
+        onRecurrenceChange={setRecurrence}
+        onCalendarChange={setCalendarProvider}
+        onReminderChange={setReminderTiming}
       />
     )
   }
-
 
   if (step == 2 && type == 'Payment') {
     return (
       <PaymentCheckout
         products={products}
+        amount={amount}
         stripeId={stripeId}
         onBack={onBack}
         onNext={onNext}
-        amount={amount}
       />
     )
   }
 
-  return (
-    <div className="flex flex-col items-center gap-3">
-      <h2 className="font-bold text-gray-600 text-4xl">Thank You</h2>
-      <p className="text-center">
-        Thank you for taking the time to fill in this form. We look forward to
-        <br /> speaking to you soon.
-      </p>
-    </div>
-  )
+  return null
 }
 
 export default PortalSteps
