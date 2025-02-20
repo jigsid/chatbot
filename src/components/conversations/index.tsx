@@ -1,6 +1,6 @@
 'use client'
 import { useConversation } from '@/hooks/conversation/use-conversation'
-import React from 'react'
+import React, { useEffect } from 'react'
 import TabsMenu from '../tabs/intex'
 import { TABS_MENU } from '@/constants/menu'
 import { TabsContent } from '../ui/tabs'
@@ -21,8 +21,14 @@ type Props = {
 }
 
 const ConversationMenu = ({ domains }: Props) => {
-  const { register, chatRooms, loading, onGetActiveChatMessages } =
+  const { register, chatRooms, loading, onGetActiveChatMessages, setValue } =
     useConversation()
+
+  useEffect(() => {
+    if (domains?.length) {
+      setValue('domain', domains[0].id);
+    }
+  }, [domains, setValue]);
 
   const isExpired = (createdAt: Date) => {
     // Example logic: consider chat expired if older than 30 days

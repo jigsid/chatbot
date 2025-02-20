@@ -18,7 +18,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
 
 export const useConversation = () => {
-  const { register, watch } = useForm({
+  const { register, watch, setValue } = useForm({
     resolver: zodResolver(ConversationSearchSchema),
     mode: 'onChange',
   })
@@ -38,8 +38,10 @@ export const useConversation = () => {
     }[]
   >([])
   const [loading, setLoading] = useState<boolean>(false)
+
   useEffect(() => {
     const search = watch(async (value) => {
+      if (!value.domain) return;
       setLoading(true)
       try {
         const rooms = await onGetDomainChatRooms(value.domain)
@@ -49,6 +51,7 @@ export const useConversation = () => {
         }
       } catch (error) {
         console.log(error)
+        setLoading(false)
       }
     })
     return () => search.unsubscribe()
@@ -65,13 +68,16 @@ export const useConversation = () => {
       }
     } catch (error) {
       console.log(error)
+      loadMessages(false)
     }
   }
+
   return {
     register,
     chatRooms,
     loading,
     onGetActiveChatMessages,
+    setValue
   }
 }
 

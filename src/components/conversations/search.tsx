@@ -16,14 +16,12 @@ const ConversationSearch = ({ register, domains }: Props) => {
   return (
     <div className="flex flex-col py-3">
       <select
-        {...register('domain')}
+        {...register('domain', { required: true })}
         className="px-3 py-4 text-sm border-[1px] rounded-lg mr-5"
+        defaultValue={domains?.[0]?.id}
       >
-        <option
-          disabled
-          selected
-        >
-          Domain name
+        <option value="" disabled>
+          Select domain
         </option>
         {domains?.map((domain) => (
           <option
