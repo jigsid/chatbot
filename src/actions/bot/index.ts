@@ -212,7 +212,7 @@ export const onAiChatBotAssistant = async (
         )
 
         // Initialize Gemini Pro chat with improved prompt
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const chat = model.startChat({
           history: [
             {
@@ -281,7 +281,7 @@ export const onAiChatBotAssistant = async (
 
       // Initial conversation without customer email
       console.log('No customer')
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const chat = model.startChat({
         history: [
           {
