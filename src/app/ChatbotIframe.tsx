@@ -23,7 +23,8 @@ const ChatbotIframe = () => {
         z-index: 999;
         max-width: 350px;
         max-height: 646px;
-        border-radius: 10px;
+        border-radius: 12px;
+        overflow: hidden;
       }
     `);
 

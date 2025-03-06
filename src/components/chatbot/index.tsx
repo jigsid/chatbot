@@ -25,28 +25,30 @@ const AiChatBot = (props: Props) => {
   } = useChatBot()
 
   return (
-    <div className="h-screen flex flex-col justify-end items-end gap-4">
+    <div className="h-screen flex flex-col justify-end items-end gap-4 p-4 pointer-events-none">
       {botOpened && (
-        <BotWindow
-          errors={errors}
-          setChat={setOnChats}
-          realtimeMode={onRealTime}
-          helpdesk={currentBot?.helpdesk!}
-          domainName={currentBot?.name!}
-          ref={messageWindowRef}
-          help={currentBot?.chatBot?.helpdesk}
-          theme={currentBot?.chatBot?.background}
-          textColor={currentBot?.chatBot?.textColor}
-          chats={onChats}
-          register={register}
-          onChat={onStartChatting}
-          onResponding={onAiTyping}
-        />
+        <div className="pointer-events-auto">
+          <BotWindow
+            errors={errors}
+            setChat={setOnChats}
+            realtimeMode={onRealTime}
+            helpdesk={currentBot?.helpdesk!}
+            domainName={currentBot?.name!}
+            ref={messageWindowRef}
+            help={currentBot?.chatBot?.helpdesk}
+            theme={currentBot?.chatBot?.background}
+            textColor={currentBot?.chatBot?.textColor}
+            chats={onChats}
+            register={register}
+            onChat={onStartChatting}
+            onResponding={onAiTyping}
+          />
+        </div>
       )}
       <div
         className={cn(
-          'rounded-md relative cursor-pointer shadow-md w-20 h-20 flex items-center justify-center bg-grandis',
-          loading ? 'invisible' : 'visible'
+          'rounded-full relative cursor-pointer shadow-lg w-14 h-14 flex items-center justify-center bg-blue-500 hover:bg-blue-600 transition-all transform hover:scale-105 pointer-events-auto',
+          loading ? 'invisible' : 'visible animate-in slide-in-from-bottom-2 duration-300'
         )}
         onClick={onOpenChatBot}
       >
@@ -55,9 +57,10 @@ const AiChatBot = (props: Props) => {
             src={`https://ucarecdn.com/${currentBot.chatBot.icon}/`}
             alt="bot"
             fill
+            className="p-2 rounded-full"
           />
         ) : (
-          <BotIcon />
+          <BotIcon className="w-7 h-7 text-white" />
         )}
       </div>
     </div>
