@@ -1,23 +1,87 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { cn, extractUUIDFromString, getMonthName } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { User } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Smile, Frown, Meh } from 'lucide-react'
+import TypingEffect from './typing-effect'
 
 type Props = {
   message: {
     role: 'assistant' | 'user'
     content: string
     link?: string
+    sentiment?: 'positive' | 'negative' | 'neutral'
   }
   createdAt?: Date
 }
 
+// Simple sentiment analysis function
+const analyzeSentiment = (text: string): 'positive' | 'negative' | 'neutral' => {
+  const positiveWords = ['happy', 'great', 'excellent', 'good', 'love', 'thanks', 'thank', 'awesome', 'amazing', 'wonderful', 'pleased', 'delighted'];
+  const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'disappointed', 'angry', 'upset', 'annoyed', 'frustrated', 'unhappy', 'dislike', 'problem'];
+  
+  const lowerText = text.toLowerCase();
+  let positiveScore = 0;
+  let negativeScore = 0;
+  
+  positiveWords.forEach(word => {
+    if (lowerText.includes(word)) positiveScore++;
+  });
+  
+  negativeWords.forEach(word => {
+    if (lowerText.includes(word)) negativeScore++;
+  });
+  
+  if (positiveScore > negativeScore) return 'positive';
+  if (negativeScore > positiveScore) return 'negative';
+  return 'neutral';
+};
+
 const Bubble = ({ message, createdAt }: Props) => {
   let d = new Date()
   const image = extractUUIDFromString(message.content)
-  console.log(message.link)
+  const [showTypingEffect, setShowTypingEffect] = useState(false);
+  const [typingComplete, setTypingComplete] = useState(false);
+  
+  // Determine sentiment if not already provided
+  const sentiment = message.sentiment || (message.role === 'user' ? analyzeSentiment(message.content) : undefined);
+  
+  // Get sentiment icon
+  const getSentimentIcon = () => {
+    if (!sentiment || message.role !== 'user') return null;
+    
+    switch (sentiment) {
+      case 'positive':
+        return <Smile className="w-3 h-3 text-green-500" />;
+      case 'negative':
+        return <Frown className="w-3 h-3 text-red-500" />;
+      case 'neutral':
+        return <Meh className="w-3 h-3 text-gray-500" />;
+      default:
+        return null;
+    }
+  };
+  
+  // Show typing effect for bot messages when they first appear
+  useEffect(() => {
+    if (message.role === 'assistant') {
+      setShowTypingEffect(true);
+      
+      // After 5 seconds, force complete if not already done
+      const timeout = setTimeout(() => {
+        setTypingComplete(true);
+      }, 5000);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [message.role]);
+  
+  // Handle typing completion
+  const handleTypingComplete = () => {
+    setTypingComplete(true);
+  };
 
   return (
     <div
@@ -63,30 +127,23 @@ const Bubble = ({ message, createdAt }: Props) => {
             ? 'bg-white border border-gray-100'
             : 'bg-blue-500 text-white'
         )}
+        style={{ 
+          color: message.role === 'assistant' ? '#1f2937' : '#ffffff',
+          backgroundColor: message.role === 'assistant' ? '#ffffff' : '#3b82f6'
+        }}
       >
-        {createdAt ? (
-          <div className={cn(
-            'flex gap-1.5 text-[9px]',
-            message.role == 'assistant' ? 'text-gray-400' : 'text-blue-100'
-          )}>
-            <p>
-              {createdAt.getDate()} {getMonthName(createdAt.getMonth())}
-            </p>
-            <p>
-              {createdAt.getHours()}:{createdAt.getMinutes()}
-              {createdAt.getHours() > 12 ? 'PM' : 'AM'}
-            </p>
-          </div>
-        ) : (
-          <p className={cn(
-            'text-[9px]',
-            message.role == 'assistant' ? 'text-gray-400' : 'text-blue-100'
-          )}>
-            {`${d.getHours()}:${d.getMinutes()} ${
-              d.getHours() > 12 ? 'pm' : 'am'
-            }`}
+        <div className={cn(
+          'flex justify-between items-center',
+          message.role == 'assistant' ? 'text-gray-400' : 'text-blue-100'
+        )}>
+          <p className="text-[9px]" style={{ color: message.role === 'assistant' ? '#9ca3af' : '#bfdbfe' }}>
+            {createdAt ? 
+              `${createdAt.getDate()} ${getMonthName(createdAt.getMonth())} ${createdAt.getHours()}:${createdAt.getMinutes()} ${createdAt.getHours() > 12 ? 'PM' : 'AM'}` :
+              `${d.getHours()}:${d.getMinutes()} ${d.getHours() > 12 ? 'pm' : 'am'}`
+            }
           </p>
-        )}
+          {getSentimentIcon()}
+        </div>
         {image ? (
           <div className="relative aspect-square rounded-md overflow-hidden">
             <Image
@@ -100,19 +157,33 @@ const Bubble = ({ message, createdAt }: Props) => {
           <p className={cn(
             'text-[11px] leading-[1.4]',
             message.role == 'assistant' ? 'text-gray-700' : 'text-white'
-          )}>
-            {message.content.replace('(complete)', ' ')}
-            {message.link && (
-              <Link
-                className={cn(
-                  'underline font-medium pl-1 hover:opacity-80 transition-opacity',
-                  message.role == 'assistant' ? 'text-blue-500' : 'text-white'
+          )}
+          style={{ color: message.role === 'assistant' ? '#374151' : '#ffffff' }}
+          >
+            {message.role === 'assistant' && showTypingEffect && !typingComplete ? (
+              <TypingEffect 
+                text={message.content.replace('(complete)', ' ')} 
+                speed={20}
+                onComplete={handleTypingComplete}
+                textColor={message.role === 'assistant' ? '#374151' : '#ffffff'}
+              />
+            ) : (
+              <>
+                {message.content.replace('(complete)', ' ')}
+                {message.link && (
+                  <Link
+                    className={cn(
+                      'underline font-medium pl-1 hover:opacity-80 transition-opacity',
+                      message.role == 'assistant' ? 'text-blue-500' : 'text-white'
+                    )}
+                    style={{ color: message.role === 'assistant' ? '#3b82f6' : '#ffffff' }}
+                    href={message.link}
+                    target="_blank"
+                  >
+                    Your Link
+                  </Link>
                 )}
-                href={message.link}
-                target="_blank"
-              >
-                Your Link
-              </Link>
+              </>
             )}
           </p>
         )}

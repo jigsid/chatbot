@@ -26,11 +26,11 @@ export const Responding = () => {
           </svg>
         </div>
       </div>
-      <div className="chat-bubble">
-        <div className="typing">
-          <div className="dot"></div>
-          <div className="dot"></div>
-          <div className="dot"></div>
+      <div className="chat-bubble" style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', padding: '0.5rem 0.75rem' }}>
+        <div className="typing" style={{ display: 'flex', alignItems: 'center' }}>
+          <div className="dot" style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#3b82f6', margin: '0 2px', animation: 'typing 1.5s infinite ease-in-out' }}></div>
+          <div className="dot" style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#3b82f6', margin: '0 2px', animation: 'typing 1.5s infinite ease-in-out 0.5s' }}></div>
+          <div className="dot" style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#3b82f6', margin: '0 2px', animation: 'typing 1.5s infinite ease-in-out 1s' }}></div>
         </div>
       </div>
     </div>
