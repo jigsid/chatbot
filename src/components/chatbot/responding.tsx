@@ -4,13 +4,28 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 export const Responding = () => {
   return (
     <div className="self-start flex items-end gap-3">
-      <Avatar className="w-5 h-5">
-        <AvatarImage
-          src="https://ucarecdn.com/f6d9d407-a2da-4a2c-a177-241cc854b9c7/-/preview/512x512/"
-          alt="@shadcn"
-        />
-        <AvatarFallback>CN</AvatarFallback>
-      </Avatar>
+      <div className="relative w-5 h-5">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
+        <div className="absolute inset-[0.5px] bg-white rounded-full flex items-center justify-center">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="text-blue-500"
+          >
+            <rect x="5" y="4" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M12 16V19" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M8 19H16" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+            <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" />
+            <path d="M9 12H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3 10L5 8M3 14L5 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M21 10L19 8M21 14L19 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+      </div>
       <div className="chat-bubble">
         <div className="typing">
           <div className="dot"></div>

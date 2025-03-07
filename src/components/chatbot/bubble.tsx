@@ -38,13 +38,14 @@ const Bubble = ({ message, createdAt }: Props) => {
               xmlns="http://www.w3.org/2000/svg"
               className="text-blue-500"
             >
-              <path
-                d="M9 12H15M12 12V15M12 12V9M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 13.9021 3.5901 15.6665 4.59721 17.1199C4.70168 17.2707 4.75351 17.4653 4.73147 17.6579L4.39139 20.3974C4.34891 20.7662 4.66457 21.0818 5.03339 21.0393L7.77292 20.6992C7.96558 20.6772 8.16012 20.729 8.31092 20.8335C9.76428 21.8406 11.5287 22.4307 13.4308 22.4307"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <rect x="5" y="4" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M12 16V19" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M8 19H16" stroke="currentColor" strokeWidth="1.5" />
+              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+              <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" />
+              <path d="M9 12H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M3 10L5 8M3 14L5 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M21 10L19 8M21 14L19 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
         </div>

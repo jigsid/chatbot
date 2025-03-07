@@ -15,17 +15,72 @@ export const BotIcon = ({ className }: BotIconProps) => {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        d="M16.8297 20.6851H30.3231"
+      {/* Robot head */}
+      <rect
+        x="10"
+        y="8"
+        width="27"
+        height="24"
+        rx="4"
         stroke="currentColor"
-        strokeWidth="4.45582"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path
-        d="M21.6488 35.9713L30.2267 41.6771C31.4989 42.5253 33.2145 41.6193 33.2145 40.0772V35.9713C38.9974 35.9713 42.8526 32.1161 42.8526 26.3332V14.7675C42.8526 8.98464 38.9974 5.12939 33.2145 5.12939H13.9383C8.15541 5.12939 4.30017 8.98464 4.30017 14.7675V26.3332C4.30017 32.1161 8.15541 35.9713 13.9383 35.9713H21.6488Z"
+      
+      {/* Robot eyes */}
+      <circle
+        cx="18"
+        cy="18"
+        r="3"
         stroke="currentColor"
-        strokeWidth="4.45582"
+        strokeWidth="2"
+        fill="none"
+      />
+      <circle
+        cx="29"
+        cy="18"
+        r="3"
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="none"
+      />
+      
+      {/* Robot mouth/smile */}
+      <path
+        d="M17 26h13"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      
+      {/* Antenna */}
+      <path
+        d="M23.5 8V4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle
+        cx="23.5"
+        cy="3"
+        r="1"
+        fill="currentColor"
+      />
+      
+      {/* Connection to chat bubble */}
+      <path
+        d="M23.5 32v3"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      
+      {/* Chat bubble */}
+      <path
+        d="M16 35h15l4 5v-5h2a3 3 0 0 0 3-3v-4a3 3 0 0 0-3-3H10a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h6"
+        stroke="currentColor"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

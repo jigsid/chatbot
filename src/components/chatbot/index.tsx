@@ -47,7 +47,7 @@ const AiChatBot = (props: Props) => {
       )}
       <div
         className={cn(
-          'rounded-full relative cursor-pointer shadow-lg w-14 h-14 flex items-center justify-center bg-blue-500 hover:bg-blue-600 transition-all transform hover:scale-105 pointer-events-auto',
+          'rounded-full relative cursor-pointer shadow-lg w-14 h-14 flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 pointer-events-auto',
           loading ? 'invisible' : 'visible animate-in slide-in-from-bottom-2 duration-300'
         )}
         onClick={onOpenChatBot}
@@ -57,10 +57,10 @@ const AiChatBot = (props: Props) => {
             src={`https://ucarecdn.com/${currentBot.chatBot.icon}/`}
             alt="bot"
             fill
-            className="p-2 rounded-full"
+            className="p-2 rounded-full object-cover"
           />
         ) : (
-          <BotIcon className="w-7 h-7 text-white" />
+          <BotIcon className="w-8 h-8 text-white" />
         )}
       </div>
     </div>
