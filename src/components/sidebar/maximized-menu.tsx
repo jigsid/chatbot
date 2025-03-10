@@ -24,23 +24,23 @@ const MaxMenu = ({ current, domains, onExpand, onSignOut }: Props) => {
     <div className="px-4 flex flex-col h-full">
       <div className="flex justify-between items-center py-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-violet-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-violet-500/20">
+          <div className="w-8 h-8 bg-magenta rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-magenta/20">
             SR
           </div>
           <Link href="/">
-            <span className="text-lg font-semibold text-gray-900">
-              Smart<span className="text-violet-500">Rep</span> AI
+            <span className="text-lg font-semibold text-white">
+              Smart<span className="text-magenta">Rep</span> AI
             </span>
           </Link>
         </div>
         <Menu
-          className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors w-5 h-5"
+          className="cursor-pointer text-white hover:text-magenta transition-colors w-5 h-5"
           onClick={onExpand}
         />
       </div>
       <div className="flex flex-col justify-between h-full pt-4">
         <div className="flex flex-col justify-start">
-          <p className="text-xs font-medium text-gray-500 mb-2 px-3">MENU</p>
+          <p className="text-xs font-medium text-magenta mb-2 px-3">MENU</p>
           {SIDE_BAR_MENU.map((menu, key) => (
             <MenuItem
               size="max"
@@ -52,7 +52,7 @@ const MaxMenu = ({ current, domains, onExpand, onSignOut }: Props) => {
           <DomainMenu domains={domains} />
         </div>
         <div className="flex flex-col pb-4">
-          <p className="text-xs font-medium text-gray-500 mb-2 px-3">OPTIONS</p>
+          <p className="text-xs font-medium text-magenta mb-2 px-3">OPTIONS</p>
           <MenuItem
             size="max"
             label="Sign out"

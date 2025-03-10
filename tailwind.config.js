@@ -21,6 +21,11 @@ module.exports = {
         "spin-slow-reverse": "spin 25s linear infinite reverse",
       },
       colors: {
+        magenta: {
+          light: '#F48FB1',
+          DEFAULT: '#E91E63',
+          dark: '#C2185B',
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

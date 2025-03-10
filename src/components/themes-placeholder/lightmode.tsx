@@ -24,7 +24,7 @@ export const LightMode = () => {
       <rect x="44" y="110" width="61" height="17" rx="3" fill="#D9D9D9" />
       <rect x="44" y="132" width="61" height="17" rx="3" fill="#D9D9D9" />
       <rect x="119" y="67" width="125" height="126" rx="4" fill="#D9D9D9" />
-      <rect x="137" width="145" height="193" fill="#F5F5F5" />
+      <rect x="137" width="145" height="193" fill="#FFFFFF" />
       <circle cx="45.5" cy="39.5" r="4.5" fill="#FF6F6F" />
       <circle cx="58.5" cy="39.5" r="4.5" fill="#FFF500" />
       <circle cx="71.5" cy="39.5" r="4.5" fill="#9AFF76" />

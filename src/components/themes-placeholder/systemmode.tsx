@@ -14,7 +14,7 @@ export const SystemMode = () => {
       />
       <path
         d="M28 42C28 33.7157 34.7157 27 43 27H242C250.284 27 257 33.7157 257 42V193H28V42Z"
-        fill="white"
+        fill="#FFFFFF"
       />
       <circle cx="45.5" cy="39.5" r="4.5" fill="#FF6F6F" />
       <circle cx="58.5" cy="39.5" r="4.5" fill="#FFF500" />
@@ -25,9 +25,9 @@ export const SystemMode = () => {
       <rect x="44" y="132" width="61" height="17" rx="3" fill="#D9D9D9" />
       <rect x="119" y="67" width="125" height="126" rx="4" fill="#D9D9D9" />
       <rect x="137" width="145" height="193" fill="black" />
-      <circle cx="45.5" cy="39.5" r="4.5" fill="#FF6F6F" />
-      <circle cx="58.5" cy="39.5" r="4.5" fill="#FFF500" />
-      <circle cx="71.5" cy="39.5" r="4.5" fill="#9AFF76" />
+      <circle cx="45.5" cy="39.5" fill="#FFFFFF" />
+      <circle cx="58.5" cy="39.5" fill="#FFFFFF" />
+      <circle cx="71.5" cy="39.5" fill="#FFFFFF" />
       <rect x="44" y="67" width="61" height="17" rx="3" fill="#D9D9D9" />
       <rect x="44" y="88" width="61" height="17" rx="3" fill="#D9D9D9" />
       <rect x="44" y="110" width="61" height="17" rx="3" fill="#D9D9D9" />

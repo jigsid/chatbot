@@ -32,7 +32,7 @@ function NavBar() {
       variants={navVariants}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-slate-900/70 backdrop-blur-lg shadow-lg border-b border-slate-800/30"
+          ? "bg-black/70 backdrop-blur-lg shadow-lg border-b border-magenta/30"
           : "bg-transparent"
       }`}
     >
