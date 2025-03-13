@@ -93,7 +93,7 @@ const SettingsPage = async (props: Props) => {
               <Globe className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
               <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">No Domains Found</h2>
               <p className="text-gray-500 dark:text-gray-400 mb-6">
-                You don't have any domains configured yet. Add a domain to get started.
+                You don&apos;t have any domains configured yet. Add a domain to get started.
               </p>
               <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                 Add Domain
