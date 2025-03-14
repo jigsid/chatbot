@@ -57,7 +57,7 @@ const stats = [
 
 export default async function Home() {
   return (
-    <main className="overflow-hidden">
+    <div className="overflow-hidden">
       <NavBar />
 
       {/* Hero Section */}
@@ -70,8 +70,8 @@ export default async function Home() {
         {/* Advanced Gradient Overlay */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(51,65,85,0.15),_transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(94,234,212,0.04),_transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(124,58,237,0.05),_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(233,30,99,0.04),_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(233,30,99,0.05),_transparent_50%)]" />
         </div>
 
         {/* Sophisticated Background Pattern */}
@@ -79,12 +79,12 @@ export default async function Home() {
 
         {/* Dynamic Light Effects */}
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-transparent rotate-12 blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-bl from-cyan-500/10 via-sky-500/5 to-transparent -rotate-12 blur-3xl animate-pulse" />
+          <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-magenta/10 via-pink-500/5 to-transparent rotate-12 blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-bl from-red-500/10 via-rose-500/5 to-transparent -rotate-12 blur-3xl animate-pulse" />
         </div>
 
         {/* Animated Particles */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0">
           {[...Array(8)].map((_, i) => (
             <MotionDiv
               key={i}
@@ -104,9 +104,9 @@ export default async function Home() {
               className={clsx(
                 "absolute rounded-full mix-blend-soft-light",
                 i % 3 === 0
-                  ? "bg-gradient-to-r from-violet-500/[0.03] via-fuchsia-500/[0.02] to-transparent"
+                  ? "bg-gradient-to-r from-magenta/[0.03] via-pink-500/[0.02] to-transparent"
                   : i % 3 === 1
-                  ? "bg-gradient-to-r from-cyan-500/[0.03] via-sky-500/[0.02] to-transparent"
+                  ? "bg-gradient-to-r from-red-500/[0.03] via-rose-500/[0.02] to-transparent"
                   : "bg-gradient-to-r from-slate-400/[0.03] via-slate-500/[0.02] to-transparent"
               )}
               style={{
@@ -128,18 +128,21 @@ export default async function Home() {
               variants={fadeInDown}
               className="relative group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-cyan-500/20 blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-r from-magenta/20 via-pink-500/20 to-red-500/20 blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
               <div className="relative px-8 py-3 bg-slate-900/40 backdrop-blur-xl rounded-full text-sm font-medium tracking-wider flex items-center gap-3 border border-slate-700/30 shadow-lg shadow-slate-950/20">
-                <Sparkles className="w-4 h-4 text-violet-300/90" />
-                <span className="bg-gradient-to-r from-slate-100 via-violet-200 to-cyan-200 bg-clip-text text-transparent">
+                <Sparkles className="w-4 h-4 text-magenta/90" />
+                <span className="bg-gradient-to-r from-slate-100 via-magenta to-red-200 bg-clip-text text-transparent">
                   Enterprise-Grade AI Solutions
-          </span>
-                <Sparkles className="w-4 h-4 text-violet-300/90" />
+                </span>
+                <Sparkles className="w-4 h-4 text-magenta/90" />
               </div>
             </MotionSpan>
 
             {/* Title Animation */}
-            <MotionDiv variants={textContainer} className="relative">
+            <MotionDiv
+              variants={fadeInUp}
+              className="relative"
+            >
               <div className="relative">
                 <MotionDiv className="flex justify-center flex-wrap gap-1">
                   {SmartRepTitle.map((letter, index) => (
@@ -149,7 +152,7 @@ export default async function Home() {
                       className={clsx(
                         "text-7xl sm:text-8xl md:text-9xl font-bold",
                         "bg-gradient-to-b from-slate-100 via-slate-200 to-slate-300/90 bg-clip-text text-transparent",
-                        "hover:from-violet-200 hover:via-fuchsia-200 hover:to-cyan-200",
+                        "hover:from-magenta hover:via-pink-500 hover:to-red-500",
                         "transition-all duration-500 transform",
                         {
                           "mr-8": letter === " ",
@@ -193,7 +196,7 @@ export default async function Home() {
                   whileHover={{ y: -5, scale: 1.02 }}
                   className="relative group"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-cyan-500/10 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-magenta/10 via-pink-500/5 to-red-500/10 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <Card className="relative border-0 bg-slate-900/40 backdrop-blur-xl shadow-lg shadow-slate-950/20 group-hover:shadow-xl group-hover:shadow-slate-950/30 transition-all duration-500">
                     <CardHeader className="pb-2">
                       <CardDescription className="text-sm text-slate-400/80 font-light group-hover:text-slate-300/90 transition-colors duration-500">
@@ -201,7 +204,7 @@ export default async function Home() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <CardTitle className="text-3xl font-bold bg-gradient-to-r from-slate-100 via-violet-200 to-cyan-200 bg-clip-text text-transparent group-hover:from-violet-200 group-hover:via-fuchsia-200 group-hover:to-cyan-200 transition-all duration-500">
+                      <CardTitle className="text-3xl font-bold bg-gradient-to-r from-slate-100 via-magenta to-red-200 bg-clip-text text-transparent group-hover:from-magenta group-hover:via-pink-500 group-hover:to-red-500 transition-all duration-500">
                         {stat.number}
                       </CardTitle>
                       <CardDescription className="text-slate-300/80 text-sm font-light group-hover:text-slate-200/90 transition-colors duration-500 mt-1">
@@ -214,16 +217,16 @@ export default async function Home() {
             </MotionDiv>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-8 mb-20">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
               <MotionDiv
                 variants={fadeInUp}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="relative group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-cyan-500/20 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-r from-magenta/20 via-pink-500/20 to-red-500/20 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <Link href="/dashboard">
-                  <Button variant="default" size="lg" className="relative bg-gradient-to-r from-violet-500/80 via-fuchsia-500/80 to-violet-500/80 hover:from-violet-500/90 hover:via-fuchsia-500/90 hover:to-violet-500/90 text-white px-8 py-6 text-lg rounded-lg shadow-lg shadow-violet-500/10 hover:shadow-violet-500/20 transition-all duration-500 flex items-center gap-2 min-w-[200px] justify-center backdrop-blur-sm overflow-hidden">
+                  <Button variant="default" size="lg" className="relative bg-gradient-to-r from-magenta/80 via-pink-500/80 to-magenta/80 hover:from-magenta/90 hover:via-pink-500/90 hover:to-magenta/90 text-white px-8 py-6 text-lg rounded-lg shadow-lg shadow-magenta/10 hover:shadow-magenta/20 transition-all duration-500 flex items-center gap-2 min-w-[200px] justify-center backdrop-blur-sm overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                     Start Free Trial
                     <ArrowRightCircleIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-500" />
@@ -366,7 +369,7 @@ export default async function Home() {
                 </span>
                 <h3 className="text-xl font-semibold mb-4 text-slate-50">
                   {feature.title}
-              </h3>
+                </h3>
                 <p className="text-slate-300/90 leading-relaxed font-light">
                   {feature.description}
                 </p>
@@ -434,29 +437,29 @@ export default async function Home() {
                     </CardTitle>
                     <CardDescription className="text-slate-300/90 font-light">
                       {card.description}
-              </CardDescription>
-            </CardHeader>
+                    </CardDescription>
+                  </CardHeader>
                   <CardContent className="text-center pb-8">
                     <span className="text-4xl font-bold text-slate-50">
                       {card.price}
                     </span>
                     <span className="text-slate-300/90 ml-2 font-light">
-                <span>/ month</span>
-              </span>
-            </CardContent>
+                      <span>/ month</span>
+                    </span>
+                  </CardContent>
                   <CardFooter className="flex flex-col items-start gap-6">
                     <div className="space-y-4 flex-grow">
-                {card.features.map((feature) => (
+                      {card.features.map((feature) => (
                         <div key={feature} className="flex gap-3 items-center">
                           <Check className="text-violet-300/80 w-5 h-5 flex-shrink-0" />
                           <p className="text-slate-300/90 font-light">
                             {feature}
                           </p>
-                  </div>
-                ))}
-              </div>
-              <Link
-                href={`/dashboard?plan=${card.title.toLowerCase()}`}
+                        </div>
+                      ))}
+                    </div>
+                    <Link
+                      href={`/dashboard?plan=${card.title.toLowerCase()}`}
                       className={clsx(
                         "w-full text-center font-medium rounded-lg py-4 transition-all duration-500 hover:scale-[1.02]",
                         {
@@ -466,14 +469,14 @@ export default async function Home() {
                             card.title !== "Ultimate",
                         }
                       )}
-              >
-                Get Started
-              </Link>
-            </CardFooter>
-          </Card>
+                    >
+                      Get Started
+                    </Link>
+                  </CardFooter>
+                </Card>
               </MotionDiv>
-        ))}
-      </div>
+            ))}
+          </div>
         </div>
       </MotionSection>
 
@@ -502,7 +505,7 @@ export default async function Home() {
           </MotionP>
 
           <div className="grid md:grid-cols-3 grid-cols-1 gap-8 max-w-7xl mx-auto">
-        {blogPosts &&
+            {blogPosts &&
               blogPosts.map((post, index) => (
                 <MotionDiv
                   key={post.id}
@@ -514,39 +517,39 @@ export default async function Home() {
                     <Card className="flex flex-col gap-2 rounded-xl overflow-hidden h-full bg-slate-800/20 backdrop-blur-sm border border-slate-700/20 shadow-lg shadow-slate-950/20 hover:shadow-xl hover:bg-slate-800/30 transition-all duration-500">
                       <div className="relative w-full aspect-video overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10" />
-                  <Image
-                    src={post.image}
-                    alt="post featured image"
-                    fill
-                    style={{ objectFit: "cover" }}
+                        <Image
+                          src={post.image}
+                          alt="post featured image"
+                          fill
+                          style={{ objectFit: "cover" }}
                           className="hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
+                        />
+                      </div>
                       <div className="py-8 px-8 flex flex-col gap-4">
                         <CardDescription className="text-slate-400/80 text-sm font-light">
-                    {getMonthName(new Date(post.createdAt).getMonth())}{" "}
+                          {getMonthName(new Date(post.createdAt).getMonth())}{" "}
                           {new Date(post.createdAt).getDate()},{" "}
-                    {new Date(post.createdAt).getFullYear()}
-                  </CardDescription>
+                          {new Date(post.createdAt).getFullYear()}
+                        </CardDescription>
                         <CardTitle className="text-xl text-slate-50 hover:text-violet-200 transition-colors duration-500">
                           {post.title}
                         </CardTitle>
                         <div className="text-slate-300/90 leading-relaxed font-light">
                           {parse(post.content.slice(4, 150) + "...")}
                         </div>
-                </div>
-              </Card>
-            </Link>
+                      </div>
+                    </Card>
+                  </Link>
                 </MotionDiv>
               ))}
-                </div>
-                </div>
+          </div>
+        </div>
       </MotionSection>
 
       <Contact />
       <Footer />
       <ChatbotIframe />
-    </main>
+    </div>
   );
 }
 
