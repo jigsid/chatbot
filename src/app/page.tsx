@@ -18,6 +18,10 @@ import {
   ChevronDown,
   Sparkles,
   Star,
+  Play,
+  Zap,
+  Shield,
+  Globe,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -65,53 +69,48 @@ export default async function Home() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="min-h-[95vh] pt-28 flex items-center justify-center relative bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden"
+        className="min-h-[95vh] pt-24 flex items-center relative bg-gradient-to-b from-black via-slate-950 to-slate-900 overflow-hidden"
       >
-        {/* Advanced Gradient Overlay */}
+        {/* Modern 2025 Glass Morphism Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(51,65,85,0.15),_transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(233,30,99,0.04),_transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(233,30,99,0.05),_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(128,0,255,0.1),_transparent_35%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(0,204,255,0.08),_transparent_40%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(147,51,234,0.05),_transparent_45%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,_rgba(0,0,0,0.6),_rgba(0,0,0,0.3)_60%,_rgba(0,0,0,0.6))]" />
         </div>
 
-        {/* Sophisticated Background Pattern */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] mix-blend-luminosity" />
+        {/* Animated Noise Texture */}
+        <div className="absolute inset-0 bg-noise opacity-[0.015] mix-blend-soft-light"></div>
 
-        {/* Dynamic Light Effects */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-magenta/10 via-pink-500/5 to-transparent rotate-12 blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-bl from-red-500/10 via-rose-500/5 to-transparent -rotate-12 blur-3xl animate-pulse" />
-        </div>
-
-        {/* Animated Particles */}
-        <div className="absolute inset-0">
-          {[...Array(8)].map((_, i) => (
+        {/* Animated Gradient Orbs */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(5)].map((_, i) => (
             <MotionDiv
               key={i}
               initial={{ opacity: 0 }}
               animate={{
-                opacity: [0.01, 0.03, 0.01],
+                opacity: [0.03, 0.06, 0.03],
                 scale: [1, 1.2, 1],
-                x: [0, i % 2 === 0 ? 50 : -50, 0],
-                y: [0, i % 2 === 0 ? -30 : 30, 0],
+                x: [0, i % 2 === 0 ? 70 : -70, 0],
+                y: [0, i % 2 === 0 ? -50 : 50, 0],
               }}
               transition={{
-                duration: 20 + i * 2,
+                duration: 20 + i * 3,
                 repeat: Infinity,
-                delay: i * 3,
+                delay: i * 2,
                 ease: "easeInOut",
               }}
               className={clsx(
-                "absolute rounded-full mix-blend-soft-light",
+                "absolute rounded-full mix-blend-screen",
                 i % 3 === 0
-                  ? "bg-gradient-to-r from-magenta/[0.03] via-pink-500/[0.02] to-transparent"
+                  ? "bg-gradient-to-br from-purple-600/[0.15] via-violet-500/[0.1] to-transparent"
                   : i % 3 === 1
-                  ? "bg-gradient-to-r from-red-500/[0.03] via-rose-500/[0.02] to-transparent"
-                  : "bg-gradient-to-r from-slate-400/[0.03] via-slate-500/[0.02] to-transparent"
+                  ? "bg-gradient-to-br from-cyan-500/[0.1] via-blue-600/[0.08] to-transparent"
+                  : "bg-gradient-to-br from-fuchsia-500/[0.12] via-magenta/[0.08] to-transparent"
               )}
               style={{
-                width: 400 + i * 100,
-                height: 400 + i * 100,
+                width: 500 + i * 200,
+                height: 500 + i * 200,
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 transform: `rotate(${i * 45}deg)`,
@@ -122,150 +121,187 @@ export default async function Home() {
 
         {/* Content */}
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex items-center justify-center flex-col gap-12 mt-6">
-            {/* Enterprise Badge */}
-            <MotionSpan
-              variants={fadeInDown}
-              className="relative group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-magenta/20 via-pink-500/20 to-red-500/20 blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
-              <div className="relative px-8 py-3 bg-slate-900/40 backdrop-blur-xl rounded-full text-sm font-medium tracking-wider flex items-center gap-3 border border-slate-700/30 shadow-lg shadow-slate-950/20">
-                <Sparkles className="w-4 h-4 text-magenta/90" />
-                <span className="bg-gradient-to-r from-slate-100 via-magenta to-red-200 bg-clip-text text-transparent">
-                  Enterprise-Grade AI Solutions
-                </span>
-                <Sparkles className="w-4 h-4 text-magenta/90" />
-              </div>
-            </MotionSpan>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+            {/* Text Content - Left Side */}
+            <div className="lg:col-span-6 flex flex-col gap-8">
+              {/* Smart Badge */}
+              <MotionSpan
+                variants={fadeInDown}
+                className="relative self-start mb-2"
+              >
+                <div className="relative px-5 py-2 bg-white/5 backdrop-blur-2xl rounded-full text-sm font-medium tracking-wide flex items-center gap-2 border border-white/10 shadow-lg shadow-black/20 hover:border-white/15 transition-all duration-300">
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                  <span className="bg-gradient-to-r from-white via-cyan-200 to-violet-200 bg-clip-text text-transparent">
+                    2025 Enterprise AI Platform
+                  </span>
+                </div>
+              </MotionSpan>
 
-            {/* Title Animation */}
-            <MotionDiv
-              variants={fadeInUp}
-              className="relative"
-            >
-              <div className="relative">
-                <MotionDiv className="flex justify-center flex-wrap gap-1">
-                  {SmartRepTitle.map((letter, index) => (
-                    <MotionDiv
-                      variants={letterAnimation}
-                      key={index}
-                      className={clsx(
-                        "text-7xl sm:text-8xl md:text-9xl font-bold",
-                        "bg-gradient-to-b from-slate-100 via-slate-200 to-slate-300/90 bg-clip-text text-transparent",
-                        "hover:from-magenta hover:via-pink-500 hover:to-red-500",
-                        "transition-all duration-500 transform",
-                        {
-                          "mr-8": letter === " ",
-                        }
-                      )}
-                      whileHover={{
-                        scale: 1.05,
-                        transition: { 
-                          type: "spring",
-                          stiffness: 500,
-                          damping: 15
-                        },
-                      }}
-                    >
-                      {letter}
-                    </MotionDiv>
-                  ))}
-                </MotionDiv>
-              </div>
-            </MotionDiv>
-
-            {/* Description */}
-            <MotionP
-              variants={fadeInUp}
-              className="text-center max-w-3xl mx-auto text-lg text-slate-300/90 leading-relaxed font-light tracking-wide"
-            >
-              Elevate your customer experience with our state-of-the-art AI platform. 
-              Seamlessly handle inquiries, streamline transactions, and deliver 
-              personalized support with unprecedented efficiency.
-            </MotionP>
-
-            {/* Stats Cards */}
-            <MotionDiv
-              variants={containerVariants}
-              className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mt-4 w-full max-w-5xl mx-auto px-4"
-            >
-              {stats.map((stat, index) => (
-                <MotionDiv
-                  key={index}
+              {/* Title */}
+              <div className="space-y-3">
+                <MotionH1
                   variants={fadeInUp}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="relative group"
+                  className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-magenta/10 via-pink-500/5 to-red-500/10 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <Card className="relative border-0 bg-slate-900/40 backdrop-blur-xl shadow-lg shadow-slate-950/20 group-hover:shadow-xl group-hover:shadow-slate-950/30 transition-all duration-500">
-                    <CardHeader className="pb-2">
-                      <CardDescription className="text-sm text-slate-400/80 font-light group-hover:text-slate-300/90 transition-colors duration-500">
-                        {stat.prefix}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <CardTitle className="text-3xl font-bold bg-gradient-to-r from-slate-100 via-magenta to-red-200 bg-clip-text text-transparent group-hover:from-magenta group-hover:via-pink-500 group-hover:to-red-500 transition-all duration-500">
-                        {stat.number}
-                      </CardTitle>
-                      <CardDescription className="text-slate-300/80 text-sm font-light group-hover:text-slate-200/90 transition-colors duration-500 mt-1">
-                        {stat.label}
-                      </CardDescription>
-                    </CardContent>
-                  </Card>
-                </MotionDiv>
-              ))}
-            </MotionDiv>
+                  <span className="bg-gradient-to-r from-white via-cyan-200 to-violet-300 bg-clip-text text-transparent">
+                    Transform Your
+                  </span>
+                </MotionH1>
+                <MotionH1
+                  variants={fadeInUp}
+                  className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight"
+                >
+                  <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+                    Customer Support
+                  </span>
+                </MotionH1>
+                <MotionP
+                  variants={fadeInUp}
+                  className="max-w-xl text-xl text-slate-300/90 mt-6 leading-relaxed font-light"
+                >
+                  The next-generation AI platform that handles inquiries, streamlines
+                  transactions, and delivers personalized experiences - all while you
+                  focus on growing your business.
+                </MotionP>
+              </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              {/* CTA Buttons */}
               <MotionDiv
                 variants={fadeInUp}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative group"
+                className="flex flex-col sm:flex-row gap-4 mt-4"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-magenta/20 via-pink-500/20 to-red-500/20 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <Link href="/dashboard">
-                  <Button variant="default" size="lg" className="relative bg-gradient-to-r from-magenta/80 via-pink-500/80 to-magenta/80 hover:from-magenta/90 hover:via-pink-500/90 hover:to-magenta/90 text-white px-8 py-6 text-lg rounded-lg shadow-lg shadow-magenta/10 hover:shadow-magenta/20 transition-all duration-500 flex items-center gap-2 min-w-[200px] justify-center backdrop-blur-sm overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                    Start Free Trial
-                    <ArrowRightCircleIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-500" />
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-300"></div>
+                  <Link href="/dashboard">
+                    <Button className="relative bg-gradient-to-r from-violet-600 to-purple-600 px-8 py-7 text-base font-medium text-white rounded-lg shadow-xl hover:shadow-violet-500/30 transition-all duration-300 flex items-center gap-2 w-full sm:w-auto justify-center border border-white/10">
+                      Start Free Trial
+                      <ArrowRightCircleIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                    </Button>
+                  </Link>
+                </div>
+
+                <Link href="#demo" className="relative group">
+                  <Button variant="outline" className="relative bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 px-8 py-7 text-base font-medium rounded-lg flex items-center gap-2 w-full sm:w-auto justify-center transition-all duration-300">
+                    <Play className="w-5 h-5" />
+                    Watch Demo
                   </Button>
                 </Link>
               </MotionDiv>
 
-              <MotionDiv
-                variants={fadeInUp}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative group"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-500/10 via-slate-400/10 to-slate-500/10 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <Link href="#features">
-                  <Button variant="outline" size="lg" className="relative bg-slate-900/60 hover:bg-slate-900/80 text-slate-200 border border-slate-700/30 hover:border-slate-700/50 px-8 py-6 text-lg rounded-lg shadow-lg shadow-slate-950/10 hover:shadow-slate-950/20 transition-all duration-500 min-w-[200px] justify-center backdrop-blur-sm overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                    Explore Features
-                  </Button>
-                </Link>
+              {/* Trust Indicators */}
+              <MotionDiv variants={fadeInUp} className="mt-6">
+                <p className="text-sm text-slate-400 mb-4">Trusted by innovative companies</p>
+                <div className="flex flex-wrap gap-6 items-center opacity-70">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="h-8 w-auto grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100">
+                      <div className="h-6 w-24 bg-gradient-to-r from-slate-400 to-slate-500 rounded-md blur-[1px]"></div>
+                    </div>
+                  ))}
+                </div>
               </MotionDiv>
             </div>
-          </div>
-        </div>
 
-        {/* Scroll Indicator */}
-        <MotionDiv
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
-        >
-          <Link href="#features" className="group flex flex-col items-center">
-            <p className="text-sm font-light text-slate-400/80 group-hover:text-slate-200 transition-colors duration-500">
-              Discover More
-            </p>
-            <ChevronDown className="w-6 h-6 text-slate-400/80 group-hover:text-slate-200 animate-bounce mt-2 group-hover:animate-none group-hover:-translate-y-1 transition-all duration-300" />
-          </Link>
-        </MotionDiv>
+            {/* Dashboard Preview - Right Side */}
+            <MotionDiv
+              variants={fadeInRight}
+              className="lg:col-span-6 relative"
+            >
+              <div className="relative">
+                {/* Glow effects */}
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600/30 to-cyan-600/30 rounded-2xl blur-2xl opacity-50"></div>
+                
+                {/* Dashboard mockup */}
+                <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+                  <div className="p-2 bg-black/20 border-b border-white/5 flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                    </div>
+                    <div className="flex-1 text-center">
+                      <div className="text-xs text-slate-400 bg-white/5 rounded-md py-1 px-3 max-w-[200px] mx-auto">smartrep-ai.dashboard.io</div>
+                    </div>
+                  </div>
+                  <div className="aspect-[16/9] w-full relative">
+                    {/* Placeholder for actual dashboard image */}
+                    <div className="absolute inset-0 p-6">
+                      <div className="h-full bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-white/5 flex flex-col">
+                        <div className="flex justify-between items-center p-4 border-b border-white/5">
+                          <div className="w-32 h-6 bg-white/5 rounded-md"></div>
+                          <div className="flex gap-2">
+                            <div className="w-8 h-8 rounded-full bg-white/5"></div>
+                            <div className="w-8 h-8 rounded-full bg-white/5"></div>
+                          </div>
+                        </div>
+                        <div className="flex-1 grid grid-cols-2 gap-4 p-4">
+                          <div className="col-span-2 h-32 bg-gradient-to-r from-violet-500/10 to-cyan-500/10 rounded-lg border border-white/5 flex items-center justify-center">
+                            <div className="w-3/4 h-16 bg-white/5 rounded-md"></div>
+                          </div>
+                          <div className="h-40 bg-white/5 rounded-lg border border-white/5"></div>
+                          <div className="h-40 bg-white/5 rounded-lg border border-white/5"></div>
+                          <div className="col-span-2 h-20 bg-white/5 rounded-lg border border-white/5"></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Animated elements */}
+                    <MotionDiv
+                      animate={{
+                        opacity: [0.5, 0.8, 0.5],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="absolute bottom-8 right-8 w-32 h-32 bg-gradient-to-r from-violet-500/10 to-cyan-500/20 rounded-full blur-2xl"
+                    />
+                  </div>
+                </div>
+                
+                {/* Floating badges */}
+                <MotionDiv
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                  className="absolute -bottom-6 -left-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-3 border border-white/10 shadow-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-6 h-6 text-cyan-400" />
+                    <span className="text-sm font-medium text-white">Enterprise Security</span>
+                  </div>
+                </MotionDiv>
+                
+                <MotionDiv
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}
+                  className="absolute -top-6 right-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-3 border border-white/10 shadow-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <Globe className="w-6 h-6 text-purple-400" />
+                    <span className="text-sm font-medium text-white">Global Deployment</span>
+                  </div>
+                </MotionDiv>
+              </div>
+            </MotionDiv>
+          </div>
+
+          {/* Scroll Indicator */}
+          <MotionDiv
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 1 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          >
+            <Link href="#features" className="group flex flex-col items-center">
+              <p className="text-xs font-light text-slate-400 group-hover:text-cyan-300 transition-colors duration-300">
+                Discover More
+              </p>
+              <ChevronDown className="w-5 h-5 text-slate-400 group-hover:text-cyan-300 animate-bounce mt-1 transition-colors duration-300" />
+            </Link>
+          </MotionDiv>
+        </div>
       </MotionSection>
 
       {/* Features Section */}
