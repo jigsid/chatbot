@@ -18,18 +18,21 @@ const GreetingsMessage = ({
     <div className="flex flex-col gap-2">
       <Section
         label="Greeting message"
-        message="Customize your welcome message"
+        message="Customize your welcome message - consider asking for email and mentioning your AI can handle various questions"
       />
       <div className="lg:w-[500px]">
         <FormGenerator
           placeholder={message}
           inputType="textarea"
-          lines={2}
+          lines={4}
           register={register}
           errors={errors}
           name="welcomeMessage"
           type="text"
         />
+        <p className="text-xs text-slate-500 mt-2">
+          Tip: Including a prompt for email and mentioning your chatbot's ability to answer a wide range of questions can improve engagement.
+        </p>
       </div>
     </div>
   )

@@ -11,25 +11,30 @@ type Props = {
 
 const BotTrainingForm = ({ id }: Props) => {
   return (
-    <div className="py-5 mb-10 flex flex-col gap-5 items-start">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <h2 className="font-bold text-2xl">Bot Training</h2>
-        <p className="text-sm font-light">
+        <h2 className="font-bold text-2xl text-slate-900 dark:text-white">Bot Training</h2>
+        <p className="text-sm font-light text-slate-600 dark:text-slate-300">
           Set FAQ questions, create questions for capturing lead information and
           train your bot to act the way you want it to.
         </p>
       </div>
-      <TabsMenu triggers={HELP_DESK_TABS_MENU}>
-        <TabsContent
-          value="help desk"
-          className="w-full"
-        >
-          <HelpDesk id={id} />
-        </TabsContent>
-        <TabsContent value="questions">
-          <FilterQuestions id={id} />
-        </TabsContent>
-      </TabsMenu>
+      <div className="w-full mt-1">
+        <TabsMenu triggers={HELP_DESK_TABS_MENU}>
+          <TabsContent
+            value="help desk"
+            className="w-full mt-4"
+          >
+            <HelpDesk id={id} />
+          </TabsContent>
+          <TabsContent 
+            value="questions"
+            className="w-full mt-4"
+          >
+            <FilterQuestions id={id} />
+          </TabsContent>
+        </TabsMenu>
+      </div>
     </div>
   )
 }

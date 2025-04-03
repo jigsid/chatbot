@@ -6,23 +6,6 @@ export const onIntegrateDomain = async (domain: string, icon: string) => {
   const user = await currentUser()
   if (!user) return
   try {
-    const subscription = await client.user.findUnique({
-      where: {
-        clerkId: user.id,
-      },
-      select: {
-        _count: {
-          select: {
-            domains: true,
-          },
-        },
-        subscription: {
-          select: {
-            plan: true,
-          },
-        },
-      },
-    })
     const domainExists = await client.user.findFirst({
       where: {
         clerkId: user.id,
@@ -35,41 +18,27 @@ export const onIntegrateDomain = async (domain: string, icon: string) => {
     })
 
     if (!domainExists) {
-      if (
-        (subscription?.subscription?.plan == 'STANDARD' &&
-          subscription._count.domains < 1) ||
-        (subscription?.subscription?.plan == 'PRO' &&
-          subscription._count.domains < 100) ||
-        (subscription?.subscription?.plan == 'ULTIMATE' &&
-          subscription._count.domains < 500)
-      ) {
-        const newDomain = await client.user.update({
-          where: {
-            clerkId: user.id,
-          },
-          data: {
-            domains: {
-              create: {
-                name: domain,
-                icon,
-                chatBot: {
-                  create: {
-                    welcomeMessage: 'Hey there, have  a question? Text us here',
-                  },
+      const newDomain = await client.user.update({
+        where: {
+          clerkId: user.id,
+        },
+        data: {
+          domains: {
+            create: {
+              name: domain,
+              icon,
+              chatBot: {
+                create: {
+                  welcomeMessage: 'Hello! I\'m here to assist with any questions you have. Feel free to ask about our products, services, or anything else. To better help you, could you share your email address with me?',
                 },
               },
             },
           },
-        })
+        },
+      })
 
-        if (newDomain) {
-          return { status: 200, message: 'Domain successfully added' }
-        }
-      }
-      return {
-        status: 400,
-        message:
-          "You've reached the maximum number of domains, upgrade your plan",
+      if (newDomain) {
+        return { status: 200, message: 'Domain successfully added' }
       }
     }
     return {

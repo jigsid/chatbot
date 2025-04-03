@@ -32,20 +32,15 @@ export const useDomain = () => {
   }, [pathname]);
 
   const onAddDomain = handleSubmit(async (values: FieldValues) => {
-    if (!values.image || values.image.length === 0) {
-      toast({
-        title: 'Error',
-        description: 'Image is required',
-      });
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const uploaded = await upload.uploadFile(values.image[0]);
-      const domain = await onIntegrateDomain(values.domain, uploaded.uuid);
+      let iconUuid = '';
+      if (values.image && values.image.length > 0) {
+        const uploaded = await upload.uploadFile(values.image[0]);
+        iconUuid = uploaded.uuid;
+      }
+      const domain = await onIntegrateDomain(values.domain, iconUuid);
       if (domain) {
         reset();
         toast({

@@ -75,9 +75,9 @@ export default ChatbotIframe;
         label="Code snippet"
         message="Copy and paste this code snippet into the header tag of your website"
       />
-      <div className="bg-cream px-10 py-5 rounded-lg inline-block relative">
+      <div className="bg-cream px-6 py-4 rounded-lg w-full relative">
         <Copy
-          className="absolute top-5 right-5 text-gray-400 cursor-pointer"
+          className="absolute top-4 right-4 text-gray-400 cursor-pointer hover:text-gray-700 z-10"
           onClick={() => {
             navigator.clipboard.writeText(snippet)
             toast({
@@ -86,9 +86,11 @@ export default ChatbotIframe;
             })
           }}
         />
-        <pre>
-          <code className="text-gray-500 whitespace-pre-wrap">{snippet}</code>
-        </pre>
+        <div className="max-h-[200px] overflow-y-auto pr-4 custom-scrollbar">
+          <pre className="text-sm">
+            <code className="text-gray-500 whitespace-pre-wrap break-all">{snippet}</code>
+          </pre>
+        </div>
       </div>
     </div>
   )

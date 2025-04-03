@@ -37,6 +37,7 @@ export const AddDomainSchema = z.object({
     ),
   image: z
     .any()
+    .optional()
     .refine((files) => {
       if (files && files.length > 0) {
         return files[0].size <= MAX_UPLOAD_SIZE;

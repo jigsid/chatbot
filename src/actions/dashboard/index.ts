@@ -46,6 +46,7 @@ export const getUserPlanInfo = async () => {
           plan: "ULTIMATE",
           credits: Number.POSITIVE_INFINITY, // Unlimited credits
           domains: plan._count.domains,
+          maxDomains: Number.POSITIVE_INFINITY // Unlimited domains
         };
       }
     }

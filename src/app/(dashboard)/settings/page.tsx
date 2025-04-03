@@ -1,10 +1,9 @@
 import { onGetAllAccountDomains } from '@/actions/settings'
 import InfoBar from '@/components/infobar'
-import { Globe, Settings as SettingsIcon, ArrowRight } from 'lucide-react'
+import { Globe, Settings as SettingsIcon, ArrowRight, Moon } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
-
-type Props = {}
+import DarkModetoggle from '@/components/settings/dark-mode'
 
 interface Domain {
   id: string;
@@ -12,6 +11,8 @@ interface Domain {
   icon: string;
   customer?: any[];
 }
+
+type Props = {};
 
 const SettingsPage = async (props: Props) => {
   const domainsData = await onGetAllAccountDomains()
@@ -104,6 +105,15 @@ const SettingsPage = async (props: Props) => {
         
         <div className="mt-8 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-800 p-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Account Settings</h2>
+          
+          <div className="bg-white dark:bg-neutral-800/50 rounded-lg border border-gray-100 dark:border-neutral-800 p-6 mb-6 hover:shadow-sm transition-all">
+            <div className="flex items-center gap-2 mb-4">
+              <Moon className="w-5 h-5 text-purple-500" />
+              <h3 className="font-medium text-gray-800 dark:text-white">Appearance</h3>
+            </div>
+            <DarkModetoggle />
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white dark:bg-neutral-800/50 rounded-lg border border-gray-100 dark:border-neutral-800 p-4 hover:shadow-sm transition-all">
               <h3 className="font-medium text-gray-800 dark:text-white mb-1">Profile</h3>
