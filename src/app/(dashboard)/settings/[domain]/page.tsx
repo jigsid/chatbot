@@ -3,9 +3,11 @@ import BotTrainingForm from '@/components/forms/settings/bot-training'
 import SettingsForm from '@/components/forms/settings/form'
 import InfoBar from '@/components/infobar'
 import ProductTable from '@/components/products'
-import { Globe, Settings, Bot, ShoppingBag } from 'lucide-react'
+import { Globe, Settings, Bot, ShoppingBag, Plus } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import React from 'react'
+import { SideSheet } from '@/components/sheet'
+import { CreateProductForm } from '@/components/products/product-form'
 
 type Props = { params: { domain: string } }
 
@@ -69,11 +71,26 @@ const DomainSettingsPage = async ({ params }: Props) => {
           
           <div>
             <div className="bg-white dark:bg-neutral-800/50 rounded-xl border border-gray-100 dark:border-neutral-800 p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <ShoppingBag className="w-5 h-5 text-emerald-500" />
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                  Products
-                </h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-emerald-500" />
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                    Products
+                  </h2>
+                </div>
+                <SideSheet
+                  description="Add products to your store and set them live to accept payments from customers."
+                  title="Add a product"
+                  className="flex items-center gap-2 bg-orange px-3 py-1.5 text-black font-semibold rounded-lg text-sm"
+                  trigger={
+                    <>
+                      <Plus size={16} className="text-white" />
+                      <p className="text-white">Add Product</p>
+                    </>
+                  }
+                >
+                  <CreateProductForm id={domain.domains[0].id} />
+                </SideSheet>
               </div>
               <ProductTable
                 id={domain.domains[0].id}
