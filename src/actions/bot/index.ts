@@ -75,6 +75,8 @@ export const onAiChatBotAssistant = async (
       select: {
         name: true,
         filterQuestions: true,
+        helpdesk: true,
+        products: true,
         customer: {
           select: {
             id: true,
@@ -224,22 +226,28 @@ export const onAiChatBotAssistant = async (
                 - Helpful and informative
                 - Natural and conversational
 
-                You should address a wide range of topics and questions, not just website-related:
-                - Product information and recommendations
-                - General knowledge questions
-                - Technical support
-                - Business inquiries
-                - And any other reasonable questions
+                You have access to the following help desk information that you should use to answer customer questions:
+                ${chatBotDomain.filterQuestions.map((q) => `Question: ${q.question}\nAnswer: ${q.answered || "Not yet answered"}`).join('\n\n')}
+                
+                You should also be aware of the following products and services:
+                ${chatBotDomain.products?.map(p => `Product: ${p.name}, Price: $${p.price}`).join('\n')}
+                ${chatBotDomain.helpdesk?.map(h => `Q: ${h.question}\nA: ${h.answer}`).join('\n\n')}
 
                 You need to ask the customer these questions during the conversation, but do it naturally without showing them as a list:
                 ${chatBotDomain.filterQuestions.map((q) => q.question).join('\n')}
+                
+                Your primary objectives are:
+                1. Welcome the customer warmly
+                2. Answer any type of question they have using the help desk information when relevant
+                3. At some point in the conversation, politely ask for their email address for follow-up
+                4. If they provide their email in any format, acknowledge it and thank them
 
                 Important guidelines:
                 1. Ask questions naturally as part of the conversation
                 2. Don't use markers like [complete] or (realtime)
                 3. If the customer's request is beyond your scope, politely inform them that you'll connect them with a human representative
-                4. For appointments, provide this link: ${process.env.NEXT_PUBLIC_URL}portal/${id}/appointment/${checkCustomer?.customer[0].id}
-                5. For purchases, provide this link: ${process.env.NEXT_PUBLIC_URL}portal/${id}/payment/${checkCustomer?.customer[0].id}
+                4. For appointments, you'll help them book through email later
+                5. For purchases, you'll provide information about products and services
 
                 Remember to maintain a natural conversation flow and avoid any artificial markers or tags in your responses.`
               }]
@@ -300,20 +308,30 @@ export const onAiChatBotAssistant = async (
               - Helpful and informative
               - Natural and conversational
 
+              You have access to the following help desk information that you should use to answer customer questions:
+              ${chatBotDomain.filterQuestions.map((q) => `Question: ${q.question}\nAnswer: ${q.answered || "Not yet answered"}`).join('\n\n')}
+              
+              You should also be aware of the following products and services:
+              ${chatBotDomain.products?.map(p => `Product: ${p.name}, Price: $${p.price}`).join('\n')}
+              ${chatBotDomain.helpdesk?.map(h => `Q: ${h.question}\nA: ${h.answer}`).join('\n\n')}
+
+              You need to ask the customer these questions during the conversation, but do it naturally without showing them as a list:
+              ${chatBotDomain.filterQuestions.map((q) => q.question).join('\n')}
+              
               Your primary objectives are:
               1. Welcome the customer warmly
-              2. Answer any type of question they have, not just website or product related
+              2. Answer any type of question they have using the help desk information when relevant
               3. At some point in the conversation, politely ask for their email address for follow-up
               4. If they provide their email in any format, acknowledge it and thank them
-              
+
               Important guidelines:
-              - You can answer questions on any topic, not just about the website or products
-              - ALWAYS try to collect the customer's email address during the conversation
-              - Ask for email in a natural way, such as "Would you mind sharing your email so I can send you more information?"
-              - If they seem hesitant, assure them their information is secure and will only be used for this conversation
-              - Stay in character as a helpful assistant throughout the conversation
-              - Be polite and professional
-              - Avoid using any artificial markers or tags in your responses`
+              1. Ask questions naturally as part of the conversation
+              2. Don't use markers like [complete] or (realtime)
+              3. If the customer's request is beyond your scope, politely inform them that you'll connect them with a human representative
+              4. For appointments, you'll help them book through email later
+              5. For purchases, you'll provide information about products and services
+
+              Remember to maintain a natural conversation flow and avoid any artificial markers or tags in your responses.`
             }]
           }
         ]
