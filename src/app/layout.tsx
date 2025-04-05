@@ -6,7 +6,13 @@ import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from '@/context/them-provider'
 // import ChatbotIframe from '@/components/chatbotIframe'
 
+// Force dynamic rendering
+import '../app/forced-dynamic'
+
 const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'] })
+
+// Force dynamic rendering at the root layout level
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'SmartRep AI',

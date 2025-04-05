@@ -1,6 +1,8 @@
 import { authMiddleware } from '@clerk/nextjs';
 import { NextResponse } from 'next/server';
 
+// This can help prevent Edge Runtime issues with Clerk by explicitly marking routes
+// that should not use Edge Runtime features
 export default authMiddleware({
   publicRoutes: [
     '/',
@@ -29,4 +31,5 @@ export default authMiddleware({
 
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  runtime: 'nodejs',  // Force Node.js runtime instead of Edge for middleware
 };
