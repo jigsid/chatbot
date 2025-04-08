@@ -33,11 +33,11 @@ const Footer = () => {
               className="hover:text-pink-500">
                 <FaInstagram size={22}/>
             </Link>
-            <Link href="https://www.linkedin.com/in/jeffjiang13"
+            <Link href="https://www.linkedin.com/in/jigsid"
               className="hover:text-blue-500">
               <FaLinkedinIn size={22}/>
             </Link>
-            <Link href="https://github.com/jeffjiang13"
+            <Link href="https://github.com/jigsid"
               className="hover:text-gray-500">
               <FaGithub size={22}/>
             </Link>
