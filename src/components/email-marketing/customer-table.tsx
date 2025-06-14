@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '../ui/button'
 import { SideSheet } from '../sheet'
 import Answers from './answers'
+import { CheckCircle2, Circle } from 'lucide-react'
 
 type CustomerTableProps = {
   domains: {
@@ -36,34 +37,44 @@ export const CustomerTable = ({
     <DataTable headers={EMAIL_MARKETING_HEADER}>
       {domains.map((domain) =>
         domain.customer.map((c) => (
-          <TableRow key={c.id}>
-            <TableCell>
-              <Card
-                onClick={() => onSelect(c.email as string)}
-                className={cn(
-                  'rounded-full w-5 h-5 border-4 cursor-pointer',
-                  select.includes(c.email as string) ? 'bg-orange' : 'bg-peach'
-                )}
-              />
+          <TableRow 
+            key={c.id} 
+            className={cn(
+              "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
+              select.includes(c.email as string) && "bg-blue-50 dark:bg-blue-900/20"
+            )}
+            onClick={() => onSelect(c.email as string)}
+          >
+            <TableCell className="w-10">
+              {select.includes(c.email as string) ? (
+                <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              ) : (
+                <Circle className="h-5 w-5 text-gray-300 dark:text-gray-600" />
+              )}
             </TableCell>
             <TableCell>{c.email}</TableCell>
             <TableCell>
               <SideSheet
-                title="Answers"
+                title="Customer Answers"
                 description="Customer answers are stored by the bot when your customers respond back to the questions asked by the bot."
                 trigger={
-                  <Card
-                    className="bg-grandis py-2 px-4 cursor-pointer text-gray-700 hover:bg-orange"
-                    onClick={() => onId(c.id)}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onId(c.id);
+                    }}
                   >
-                    View
-                  </Card>
+                    View Answers
+                  </Button>
                 }
               >
                 <Answers id={id} />
               </SideSheet>
             </TableCell>
-            <TableCell className="text-right">{c.Domain?.name}</TableCell>
+            <TableCell className="text-right">{c.Domain?.name || 'Unknown'}</TableCell>
           </TableRow>
         ))
       )}

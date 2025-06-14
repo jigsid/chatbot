@@ -7,6 +7,7 @@ import IntegrationsIcon from '@/icons/integrations-icon'
 import SettingsIcon from '@/icons/settings-icon'
 import StarIcon from '@/icons/star-icon'
 import TimerIcon from '@/icons/timer-icon'
+import { MessageSquareShare, Mic } from 'lucide-react'
 
 type SIDE_BAR_MENU_PROPS = {
   label: string
@@ -29,6 +30,16 @@ export const SIDE_BAR_MENU: SIDE_BAR_MENU_PROPS[] = [
     label: 'Integrations',
     icon: <IntegrationsIcon />,
     path: 'integration',
+  },
+  {
+    label: 'Embedded Chatbot',
+    icon: <MessageSquareShare className="w-5 h-5" />,
+    path: 'embedded-chatbot-demo',
+  },
+  {
+    label: 'Voice Assistant',
+    icon: <Mic className="w-5 h-5" />,
+    path: 'settings/voice-assistant',
   },
   {
     label: 'Settings',

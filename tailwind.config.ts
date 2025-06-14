@@ -18,6 +18,9 @@ const config = {
       },
     },
     extend: {
+      transitionProperty: {
+        'width': 'width'
+      },
       colors: {
         cream: '#FFFFFF',
         gravel: '#333333',

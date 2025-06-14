@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 
 type ChatInitialValuesProps = {
   realtime: boolean
@@ -48,6 +48,13 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(ChatInitialValues.loading)
   const [chatRoom, setChatRoom] = useState(ChatInitialValues.chatRoom)
   const [realtime, setRealtime] = useState(ChatInitialValues.realtime)
+
+  // Clear chats when changing chat rooms to prevent showing old messages
+  useEffect(() => {
+    if (chatRoom === undefined) {
+      setChats([]);
+    }
+  }, [chatRoom]);
 
   const values = {
     chats,

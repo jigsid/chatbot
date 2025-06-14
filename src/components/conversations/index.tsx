@@ -43,14 +43,17 @@ const ConversationMenu = ({ domains }: Props) => {
   }
 
   return (
-    <div className="py-3 px-0">
+    <div className="py-3 px-0 w-[320px] min-w-[320px] flex flex-col h-full overflow-hidden">
+      <div className="flex justify-between items-center px-4 mb-2">
+        <h3 className="text-sm font-medium">Conversations</h3>
+      </div>
       <TabsMenu triggers={TABS_MENU}>
-        <TabsContent value="unread">
+        <TabsContent value="unread" className="h-full flex flex-col overflow-hidden">
           <ConversationSearch
             domains={domains}
             register={register}
           />
-          <div className="flex flex-col">
+          <div className="flex-1 overflow-y-auto custom-scrollbar pb-6">
             <Loader loading={loading}>
               {chatRooms.length ? (
                 chatRooms.map((room) => (
@@ -65,14 +68,14 @@ const ConversationMenu = ({ domains }: Props) => {
                   />
                 ))
               ) : (
-                <CardDescription>No chats for your domain</CardDescription>
+                <CardDescription className="p-4">No chats for your domain</CardDescription>
               )}
             </Loader>
           </div>
         </TabsContent>
-        <TabsContent value="all">
+        <TabsContent value="all" className="h-full flex flex-col overflow-hidden">
           <Separator orientation="horizontal" className="mt-5" />
-          <div className="flex flex-col">
+          <div className="flex-1 overflow-y-auto custom-scrollbar pb-6">
             <Loader loading={loading}>
               {chatRooms.length ? (
                 chatRooms.map((room) => (
@@ -87,14 +90,14 @@ const ConversationMenu = ({ domains }: Props) => {
                   />
                 ))
               ) : (
-                <CardDescription>No chats available</CardDescription>
+                <CardDescription className="p-4">No chats available</CardDescription>
               )}
             </Loader>
           </div>
         </TabsContent>
-        <TabsContent value="expired">
+        <TabsContent value="expired" className="h-full flex flex-col overflow-hidden">
           <Separator orientation="horizontal" className="mt-5" />
-          <div className="flex flex-col">
+          <div className="flex-1 overflow-y-auto custom-scrollbar pb-6">
             <Loader loading={loading}>
               {chatRooms.length ? (
                 chatRooms
@@ -111,14 +114,14 @@ const ConversationMenu = ({ domains }: Props) => {
                     />
                   ))
               ) : (
-                <CardDescription>No expired chats</CardDescription>
+                <CardDescription className="p-4">No expired chats</CardDescription>
               )}
             </Loader>
           </div>
         </TabsContent>
-        <TabsContent value="starred">
+        <TabsContent value="starred" className="h-full flex flex-col overflow-hidden">
           <Separator orientation="horizontal" className="mt-5" />
-          <div className="flex flex-col">
+          <div className="flex-1 overflow-y-auto custom-scrollbar pb-6">
             <Loader loading={loading}>
               {chatRooms.length ? (
                 chatRooms
@@ -135,12 +138,29 @@ const ConversationMenu = ({ domains }: Props) => {
                     />
                   ))
               ) : (
-                <CardDescription>No starred chats</CardDescription>
+                <CardDescription className="p-4">No starred chats</CardDescription>
               )}
             </Loader>
           </div>
         </TabsContent>
       </TabsMenu>
+      
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: rgba(155, 155, 155, 0.5);
+          border-radius: 20px;
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+        }
+      `}</style>
     </div>
   )
 }

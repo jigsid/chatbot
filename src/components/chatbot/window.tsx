@@ -23,6 +23,7 @@ import { Badge } from '../ui/badge'
 import Avatar3D from './avatar-3d'
 import ContextualActions from './contextual-actions'
 import { onAiChatBotAssistant } from '@/actions/bot'
+import VoiceAssistant from './voice-assistant'
 
 // Add SpeechRecognition types
 interface SpeechRecognitionEvent extends Event {
@@ -131,54 +132,18 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
       }
     }, [chats, onResponding]);
     
-    // Voice recognition setup
-    React.useEffect(() => {
-      if (typeof window !== 'undefined') {
-        const windowWithSpeech = window as WindowWithSpeechRecognition;
-        const SpeechRecognition = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
-        
-        if (SpeechRecognition) {
-          const recognition = new SpeechRecognition();
-          recognition.continuous = false;
-          recognition.interimResults = true;
-          
-          recognition.onresult = (event: SpeechRecognitionEvent) => {
-            const current = event.resultIndex;
-            const transcript = event.results[current][0].transcript;
-            setTranscript(transcript);
-          };
-          
-          recognition.onend = () => {
-            setIsListening(false);
-          };
-          
-          if (isListening) {
-            recognition.start();
-          }
-          
-          return () => {
-            recognition.stop();
-          };
+    // Handle voice assistant message
+    const handleVoiceMessage = (message: string) => {
+      // Set the input value to the transcript
+      const inputElement = document.querySelector('input[name="content"]') as HTMLInputElement;
+      if (inputElement) {
+        inputElement.value = message;
+        // Submit the form to send the message
+        if (formRef.current) {
+          formRef.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
         }
       }
-    }, [isListening]);
-    
-    // Toggle listening state
-    const toggleListening = () => {
-      setIsListening(!isListening);
     };
-    
-    // Submit voice transcript
-    React.useEffect(() => {
-      if (transcript && !isListening) {
-        // Set the input value to the transcript
-        const inputElement = document.querySelector('input[name="content"]') as HTMLInputElement;
-        if (inputElement) {
-          inputElement.value = transcript;
-          setTranscript('');
-        }
-      }
-    }, [transcript, isListening]);
     
     return (
       <>
@@ -203,7 +168,7 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
           }
         `}</style>
         
-        <div className="chatbot-window h-[450px] w-[350px] flex flex-col bg-white rounded-xl border-[1px] border-gray-200 overflow-hidden shadow-lg animate-in slide-in-from-bottom-3 duration-300">
+        <div className="chatbot-window h-[450px] w-[350px] flex flex-col bg-white rounded-xl border-[1px] border-gray-200 overflow-hidden shadow-lg animate-in slide-in-from-bottom-3 duration-300 fixed bottom-16 right-4">
           <div className="flex justify-between items-center px-6 py-2.5 bg-gradient-to-r from-blue-50 to-white border-b border-gray-100">
             <div className="flex gap-3">
               <Avatar3D isActive={true} mood={avatarMood} />
@@ -252,47 +217,54 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
                     <ContextualActions messages={chats} />
                   )}
                 </div>
-                <form
-                  ref={formRef}
-                  onSubmit={onChat}
-                  className="flex px-6 py-2.5 flex-col flex-1 bg-gray-50 border-t border-gray-100"
-                >
-                  <div className="flex justify-between items-center gap-2">
-                    <div className="flex-1 relative">
-                      <Input
-                        {...register('content')}
-                        placeholder="Type your message..."
-                        className="focus-visible:ring-1 focus-visible:ring-blue-200 w-full pl-3.5 pr-2.5 py-1.5 bg-white rounded-lg border border-gray-200 text-xs text-gray-800"
-                        style={{ color: '#1f2937' }}
+                <Separator className="bg-gray-100" />
+                <div className="p-4 bg-white">
+                  <form
+                    ref={formRef}
+                    onSubmit={onChat}
+                    className="flex flex-col gap-2"
+                  >
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          {...register('content')}
+                          placeholder="Type your message..."
+                          className="pr-8 py-5 bg-gray-50"
+                        />
+                        <Label
+                          htmlFor="file"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
+                        >
+                          <Paperclip className="w-4 h-4 text-gray-400" />
+                        </Label>
+                        <input
+                          type="file"
+                          id="file"
+                          className="hidden"
+                          {...register('image')}
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        size="icon"
+                        className="rounded-full h-10 w-10"
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
+                      
+                      {/* Voice Assistant Integration */}
+                      <VoiceAssistant
+                        onMessage={handleVoiceMessage}
+                        chatRoomId={realtimeMode?.chatroom}
                       />
                     </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={toggleListening}
-                      className={`${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-200 hover:bg-gray-300'} transition-colors h-7 w-7 p-0 rounded-lg shadow-sm`}
-                    >
-                      {isListening ? <MicOff className="w-3.5 h-3.5 text-white" /> : <Mic className="w-3.5 h-3.5 text-gray-600" />}
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      className="bg-blue-500 hover:bg-blue-600 transition-colors h-7 w-7 p-0 rounded-lg shadow-sm"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                  <Label htmlFor="bot-image" className="mt-1.5 flex items-center gap-1.5 text-gray-500 text-[10px] cursor-pointer hover:text-gray-700 transition-colors pl-1">
-                    <Paperclip className="w-3 h-3" />
-                    <span>Attach a file</span>
-                    <Input
-                      {...register('image')}
-                      type="file"
-                      id="bot-image"
-                      className="hidden"
-                    />
-                  </Label>
-                </form>
+                    {errors.content && (
+                      <p className="text-xs text-red-500">
+                        {errors.content.message}
+                      </p>
+                    )}
+                  </form>
+                </div>
               </div>
             </TabsContent>
 

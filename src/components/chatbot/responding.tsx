@@ -3,13 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 
 export const Responding = () => {
   return (
-    <div className="self-start flex items-end gap-3">
-      <div className="relative w-5 h-5">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
-        <div className="absolute inset-[0.5px] bg-white rounded-full flex items-center justify-center">
+    <div className="flex gap-1.5 items-end animate-in slide-in-from-bottom-2 duration-200 self-start pl-0.5">
+      <div className="relative w-4 h-4 flex-shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-md shadow-sm"></div>
+        <div className="absolute inset-[0.5px] bg-white rounded-[3px] flex items-center justify-center">
           <svg
-            width="12"
-            height="12"
+            width="10"
+            height="10"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

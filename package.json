@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "update-vapi": "node scripts/update-vapi-config.js"
   },
   "dependencies": {
     "@clerk/nextjs": "4.29.12",
@@ -46,6 +47,7 @@
     "@stripe/stripe-js": "^3.4.1",
     "@types/nodemailer": "^6.4.15",
     "@uploadcare/blocks": "^0.40.0",
+    "@vapi-ai/web": "^2.3.5",
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

@@ -2,7 +2,6 @@ import {
   onGetChatMessages,
   onGetDomainChatRooms,
   onOwnerSendMessage,
-  onRealTimeChat,
   onViewUnReadMessages,
 } from '@/actions/conversation'
 import { useChatContext } from '@/context/user-chat-context'
@@ -12,10 +11,11 @@ import {
   ConversationSearchSchema,
 } from '@/schemas/conversation.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
+import { sendMessageToExternalChatbot } from '@/actions/conversation/external-chatbot'
 
 export const useConversation = () => {
   const { register, watch, setValue } = useForm({
@@ -64,7 +64,25 @@ export const useConversation = () => {
       if (messages) {
         setChatRoom(id)
         loadMessages(false)
-        setChats(messages[0].message)
+        // Ensure each message has both message and content properties
+        const formattedMessages = messages[0]?.message?.map((msg: { 
+          id: string; 
+          role: 'assistant' | 'user' | null;
+          message?: string;
+          content?: string;
+          createdAt: Date;
+          seen: boolean;
+        }) => ({
+          ...msg,
+          content: msg.message || msg.content || '',
+          message: msg.message || msg.content || ''
+        })) || [];
+        setChats(formattedMessages)
+      } else {
+        // If no messages found, still set the chat room but with empty messages
+        setChatRoom(id)
+        setChats([])
+        loadMessages(false)
       }
     } catch (error) {
       console.log(error)
@@ -128,12 +146,72 @@ export const useChatWindow = () => {
   const messageWindowRef = useRef<HTMLDivElement | null>(null)
   const [chats, setChats] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(false)
-  const [chatRoom, setChatRoom] = useState<string | undefined>()
+  const [chatRoomInfo, setChatRoomInfo] = useState<{id: string; createdAt?: Date} | undefined>()
+  const [customerEmail, setCustomerEmail] = useState<string>('')
   const [isTyping, setIsTyping] = useState(false)
   const [readStatus, setReadStatus] = useState<Record<string, 'sent' | 'delivered' | 'read'>>({})
   const [retryCount, setRetryCount] = useState<Record<string, number>>({})
   const { toast } = useToast()
+  const { chatRoom: contextChatRoom, chats: contextChats, setChatRoom: setContextChatRoom } = useChatContext()
   
+  // Access to the chatRooms state for email lookup
+  const [chatRooms, setChatRooms] = useState<any[]>([])
+  
+  // Sync chatRoom with context
+  useEffect(() => {
+    if (contextChatRoom) {
+      setChatRoomInfo({id: contextChatRoom, createdAt: new Date()})
+    }
+  }, [contextChatRoom])
+
+  // Get customer email from chats
+  useEffect(() => {
+    if (contextChats && contextChats.length > 0) {
+      // Find the first user message to get the email
+      const userMessage = contextChats.find(chat => chat.role === 'user')
+      if (userMessage && userMessage.email) {
+        setCustomerEmail(userMessage.email)
+      } else if (chatRooms.length > 0) {
+        // Try to find the email from chatRooms
+        const room = chatRooms.find(r => r.chatRoom[0].id === contextChatRoom)
+        if (room && room.email) {
+          setCustomerEmail(room.email)
+        }
+      }
+    }
+  }, [contextChats, contextChatRoom, chatRooms])
+
+  // Fetch chat rooms to get email information
+  useEffect(() => {
+    const fetchChatRooms = async () => {
+      try {
+        const rooms = await onGetDomainChatRooms('all')
+        if (rooms && rooms.customer) {
+          setChatRooms(rooms.customer)
+          
+          // If we have a chatRoom but no email yet, try to find it
+          if (chatRoomInfo?.id && !customerEmail) {
+            const room = rooms.customer.find(r => r.chatRoom[0].id === chatRoomInfo.id)
+            if (room && room.email) {
+              setCustomerEmail(room.email)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching chat rooms:', error)
+      }
+    }
+    
+    fetchChatRooms()
+  }, [chatRoomInfo?.id, customerEmail])
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messageWindowRef.current) {
+      messageWindowRef.current.scrollTop = messageWindowRef.current.scrollHeight
+    }
+  }, [chats])
+
   const {
     register,
     handleSubmit,
@@ -145,181 +223,136 @@ export const useChatWindow = () => {
 
   // Handle real-time message updates
   useEffect(() => {
-    if (!chatRoom) return;
+    if (!chatRoomInfo?.id) return
 
-    const channel = pusherClient.subscribe(chatRoom);
+    const channel = pusherClient.subscribe(chatRoomInfo.id)
     
     channel.bind('message', (data: any) => {
-      setChats(prev => [...prev, data.message]);
-      setReadStatus(prev => ({ ...prev, [data.message.id]: 'delivered' }));
+      // Ensure the message has both message and content properties
+      const messageData = {
+        ...data.message,
+        content: data.message.message || data.message.content,
+        message: data.message.message || data.message.content
+      }
+      setChats(prev => [...prev, messageData])
+      setReadStatus(prev => ({ ...prev, [messageData.id]: 'delivered' }))
       setTimeout(() => {
-        setReadStatus(prev => ({ ...prev, [data.message.id]: 'read' }));
-      }, 2000);
-    });
+        setReadStatus(prev => ({ ...prev, [messageData.id]: 'read' }))
+      }, 2000)
+    })
 
     channel.bind('typing', () => {
-      setIsTyping(true);
-      setTimeout(() => setIsTyping(false), 3000);
-    });
+      setIsTyping(true)
+      setTimeout(() => setIsTyping(false), 3000)
+    })
 
     return () => {
-      channel.unbind_all();
-      pusherClient.unsubscribe(chatRoom);
-    };
-  }, [chatRoom]);
+      channel.unbind_all()
+      pusherClient.unsubscribe(chatRoomInfo.id)
+    }
+  }, [chatRoomInfo?.id])
 
   const retryMessage = async (messageId: string) => {
     try {
-      const message = chats.find(chat => chat.id === messageId);
-      if (!message) return;
+      const message = chats.find(chat => chat.id === messageId)
+      if (!message || !chatRoomInfo?.id) return
 
-      const currentRetries = retryCount[messageId] || 0;
+      const currentRetries = retryCount[messageId] || 0
       if (currentRetries >= 3) {
         toast({
           title: 'Error',
           description: 'Maximum retry attempts reached',
           variant: 'destructive',
-        });
-        return;
+        })
+        return
       }
 
-      setRetryCount(prev => ({ ...prev, [messageId]: currentRetries + 1 }));
-      await onOwnerSendMessage(chatRoom!, message.content, message.role);
+      setRetryCount(prev => ({ ...prev, [messageId]: currentRetries + 1 }))
+      const messageContent = message.message || message.content
+      await onOwnerSendMessage(chatRoomInfo.id, messageContent, message.role)
       
-      setReadStatus(prev => ({ ...prev, [messageId]: 'sent' }));
+      setReadStatus(prev => ({ ...prev, [messageId]: 'sent' }))
       setTimeout(() => {
-        setReadStatus(prev => ({ ...prev, [messageId]: 'delivered' }));
-      }, 1000);
+        setReadStatus(prev => ({ ...prev, [messageId]: 'delivered' }))
+      }, 1000)
     } catch (error) {
-      console.error('Retry failed:', error);
+      console.error('Retry failed:', error)
       toast({
         title: 'Error',
         description: 'Failed to retry sending message',
         variant: 'destructive',
-      });
+      })
     }
-  };
+  }
 
+  // Modified onHandleSentMessage to always use external chatbot integration
   const onHandleSentMessage = handleSubmit(async (values) => {
     try {
-      if (!values.content && !values.file) return;
+      if (!values.content && !values.file) return
+      if (!chatRoomInfo?.id) return
       
-      const messageId = Date.now().toString();
+      const messageId = Date.now().toString()
+      
+      // Create local message object
       const newMessage = {
         id: messageId,
-        role: 'user',
-        content: values.content || 'File attachment',
+        role: 'assistant',
+        content: values.content,
+        message: values.content,
         createdAt: new Date(),
-      };
-      
-      setChats(prev => [...prev, newMessage]);
-      setReadStatus(prev => ({ ...prev, [messageId]: 'sent' }));
-      
-      // Notify others that user is typing
-      if (chatRoom) {
-        await onRealTimeChat(chatRoom, 'typing', '', 'user');
+        seen: false,
       }
-
-      // Send message
-      const result = await onOwnerSendMessage(chatRoom!, values.content, 'user');
-      if (!result) throw new Error('Failed to send message');
-
-      setReadStatus(prev => ({ ...prev, [messageId]: 'delivered' }));
-      setTimeout(() => {
-        setReadStatus(prev => ({ ...prev, [messageId]: 'read' }));
-      }, 2000);
       
-      reset();
+      // Add to local state immediately for optimistic UI update
+      setChats(prev => [...prev, newMessage])
+      setReadStatus(prev => ({ ...prev, [messageId]: 'sent' }))
+      
+      // Reset the form
+      reset()
+      
+      // Check if this is an embedded chat (chatRoomId starts with 'embedded-')
+      if (chatRoomInfo.id.startsWith('embedded-')) {
+        // Send message via external chatbot integration
+        await sendMessageToExternalChatbot(
+          chatRoomInfo.id,
+          values.content,
+          'assistant'
+        )
+      } else {
+        // Send via regular channel
+        await onOwnerSendMessage(chatRoomInfo.id, values.content)
+      }
+      
+      // Update status after successful send
+      setTimeout(() => {
+        setReadStatus(prev => ({ ...prev, [messageId]: 'delivered' }))
+      }, 1000)
     } catch (error) {
-      console.error(error);
-      const msgId = Date.now().toString();
+      console.error('Send message failed:', error)
       toast({
         title: 'Error',
         description: 'Failed to send message',
-        variant: 'destructive',
-      });
-      // Add retry button separately
-      const retryBtn = document.createElement('button');
-      retryBtn.textContent = 'Retry';
-      retryBtn.onclick = () => retryMessage(msgId);
-      document.querySelector('.toast-action')?.appendChild(retryBtn);
+        variant: 'destructive'
+      })
     }
-  });
+  })
 
   const onFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: 'Error',
-          description: 'File size should be less than 5MB',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: 'Error',
-          description: 'Invalid file type. Please upload an image, PDF, or Word document.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      setLoading(true);
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      // TODO: Implement actual file upload logic here
-      // const response = await fetch('/api/upload', {
-      //   method: 'POST',
-      //   body: formData,
-      // });
-      
-      // if (!response.ok) throw new Error('Upload failed');
-      
-      toast({
-        title: 'Success',
-        description: 'File uploaded successfully',
-      });
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-      toast({
-        title: 'Error',
-        description: 'Failed to upload file',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Auto-scroll to bottom on new messages
-  useEffect(() => {
-    if (messageWindowRef.current) {
-      const shouldScroll = messageWindowRef.current.scrollHeight - messageWindowRef.current.scrollTop <= messageWindowRef.current.clientHeight + 100;
-      
-      if (shouldScroll) {
-        messageWindowRef.current.scrollTop = messageWindowRef.current.scrollHeight;
-      }
-    }
-  }, [chats, isTyping]);
+    // File upload implementation...
+    console.log('File upload not implemented yet')
+  }
 
   return {
     messageWindowRef,
-    register,
-    onHandleSentMessage,
     chats,
     loading,
-    chatRoom,
+    chatRoom: chatRoomInfo,
+    onHandleSentMessage,
+    register,
     isTyping,
     readStatus,
     onFileUpload,
-    errors,
     retryMessage,
-  };
+    customerEmail
+  }
 }

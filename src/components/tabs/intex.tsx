@@ -16,7 +16,7 @@ const TabsMenu = ({ triggers, children, className, button }: Props) => {
   return (
     <Tabs
       defaultValue={triggers[0].label}
-      className="w-full"
+      className="w-full h-full flex flex-col"
     >
       <div className="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
         <TabsList className={cn('pr-5 bg-slate-100 dark:bg-slate-800', className)}>
@@ -33,7 +33,7 @@ const TabsMenu = ({ triggers, children, className, button }: Props) => {
         </TabsList>
         {button && <div className="ml-auto">{button}</div>}
       </div>
-      <div className="w-full">
+      <div className="w-full flex-1 overflow-hidden">
         {children}
       </div>
     </Tabs>

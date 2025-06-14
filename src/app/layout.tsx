@@ -4,6 +4,7 @@ import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from '@/context/them-provider'
+import { VapiProvider } from '@/context/vapi-provider'
 // import ChatbotIframe from '@/components/chatbotIframe'
 
 // Force dynamic rendering
@@ -34,9 +35,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
-            <Toaster />
-            {/* <ChatbotIframe /> */}
+            <VapiProvider>
+              {children}
+              <Toaster />
+              {/* <ChatbotIframe /> */}
+            </VapiProvider>
           </ThemeProvider>
         </body>
       </html>

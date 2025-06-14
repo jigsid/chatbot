@@ -14,7 +14,7 @@ type Props = {
     link?: string
     sentiment?: 'positive' | 'negative' | 'neutral'
   }
-  createdAt?: Date
+  createdAt?: Date | string
 }
 
 // Simple sentiment analysis function
@@ -39,8 +39,29 @@ const analyzeSentiment = (text: string): 'positive' | 'negative' | 'neutral' => 
   return 'neutral';
 };
 
+// Format date for chat bubbles
+const formatDate = (date?: Date | string) => {
+  if (!date) return 'Now';
+  
+  const messageDate = typeof date === 'string' ? new Date(date) : date;
+  const now = new Date();
+  
+  // If today, show time only
+  if (messageDate.toDateString() === now.toDateString()) {
+    return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  
+  // If this year, show month and day
+  if (messageDate.getFullYear() === now.getFullYear()) {
+    const monthName = getMonthName(messageDate.getMonth());
+    return `${typeof monthName === 'string' ? monthName.substring(0, 3) : ''} ${messageDate.getDate()}`;
+  }
+  
+  // Otherwise show date with year
+  return messageDate.toLocaleDateString();
+};
+
 const Bubble = ({ message, createdAt }: Props) => {
-  let d = new Date()
   const image = extractUUIDFromString(message.content)
   const [showTypingEffect, setShowTypingEffect] = useState(false);
   const [typingComplete, setTypingComplete] = useState(false);
@@ -91,7 +112,7 @@ const Bubble = ({ message, createdAt }: Props) => {
       )}
     >
       {message.role == 'assistant' ? (
-        <div className="relative w-4 h-4">
+        <div className="relative w-4 h-4 flex-shrink-0">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-md shadow-sm"></div>
           <div className="absolute inset-[0.5px] bg-white rounded-[3px] flex items-center justify-center">
             <svg
@@ -114,7 +135,7 @@ const Bubble = ({ message, createdAt }: Props) => {
           </div>
         </div>
       ) : (
-        <Avatar className="w-4 h-4 ring-[0.5px] ring-offset-[0.5px] ring-gray-200">
+        <Avatar className="w-4 h-4 ring-[0.5px] ring-offset-[0.5px] ring-gray-200 flex-shrink-0">
           <AvatarFallback>
             <User className="w-2.5 h-2.5" />
           </AvatarFallback>
@@ -137,10 +158,7 @@ const Bubble = ({ message, createdAt }: Props) => {
           message.role == 'assistant' ? 'text-gray-400' : 'text-blue-100'
         )}>
           <p className="text-[9px]" style={{ color: message.role === 'assistant' ? '#9ca3af' : '#bfdbfe' }}>
-            {createdAt ? 
-              `${createdAt.getDate()} ${getMonthName(createdAt.getMonth())} ${createdAt.getHours()}:${createdAt.getMinutes()} ${createdAt.getHours() > 12 ? 'PM' : 'AM'}` :
-              `${d.getHours()}:${d.getMinutes()} ${d.getHours() > 12 ? 'pm' : 'am'}`
-            }
+            {formatDate(createdAt)}
           </p>
           {getSentimentIcon()}
         </div>

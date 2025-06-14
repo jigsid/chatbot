@@ -29,7 +29,7 @@ const MaxMenu = ({ current, domains, onExpand, onSignOut }: Props) => {
           </div>
           <Link href="/">
             <span className="text-lg font-semibold text-white">
-              Smart<span className="text-magenta">Rep</span> AI
+              Smart<span className="text-magenta">Rep</span>
             </span>
           </Link>
         </div>

@@ -14,6 +14,13 @@ type Props = { params: { domain: string } }
 const DomainSettingsPage = async ({ params }: Props) => {
   const domain = await onGetCurrentDomainInfo(params.domain)
   if (!domain) redirect('/dashboard')
+  
+  // Add a check to ensure domains array exists and has at least one item
+  if (!domain.domains || domain.domains.length === 0) {
+    redirect('/dashboard')
+  }
+
+  const currentDomain = domain.domains[0]
 
   return (
     <>
@@ -34,7 +41,7 @@ const DomainSettingsPage = async ({ params }: Props) => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Globe className="w-6 h-6 text-blue-500" />
-            {domain.domains[0].name}
+            {currentDomain.name}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
             Manage your domain settings and configurations
@@ -52,9 +59,9 @@ const DomainSettingsPage = async ({ params }: Props) => {
               </div>
               <SettingsForm
                 plan={domain.subscription?.plan!}
-                chatBot={domain.domains[0].chatBot}
-                id={domain.domains[0].id}
-                name={domain.domains[0].name}
+                chatBot={currentDomain.chatBot}
+                id={currentDomain.id}
+                name={currentDomain.name}
               />
             </div>
             
@@ -65,7 +72,7 @@ const DomainSettingsPage = async ({ params }: Props) => {
                   Chatbot Training
                 </h2>
               </div>
-              <BotTrainingForm id={domain.domains[0].id} />
+              <BotTrainingForm id={currentDomain.id} />
             </div>
           </div>
           
@@ -89,12 +96,12 @@ const DomainSettingsPage = async ({ params }: Props) => {
                     </>
                   }
                 >
-                  <CreateProductForm id={domain.domains[0].id} />
+                  <CreateProductForm id={currentDomain.id} />
                 </SideSheet>
               </div>
               <ProductTable
-                id={domain.domains[0].id}
-                products={domain.domains[0].products || []}
+                id={currentDomain.id}
+                products={currentDomain.products || []}
               />
             </div>
             
@@ -106,8 +113,8 @@ const DomainSettingsPage = async ({ params }: Props) => {
               </div>
               <div className="mt-4 text-sm text-blue-700 dark:text-blue-400">
                 <p>Plan: {domain.subscription?.plan || 'Free'}</p>
-                <p className="mt-1">Products: {domain.domains[0].products?.length || 0}</p>
-                <p className="mt-1">Chatbot: {domain.domains[0].chatBot ? 'Enabled' : 'Disabled'}</p>
+                <p className="mt-1">Products: {currentDomain.products?.length || 0}</p>
+                <p className="mt-1">Chatbot: {currentDomain.chatBot ? 'Enabled' : 'Disabled'}</p>
               </div>
             </div>
           </div>
