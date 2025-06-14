@@ -136,11 +136,12 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
     const handleVoiceMessage = (message: string) => {
       // Set the input value to the transcript
       const inputElement = document.querySelector('input[name="content"]') as HTMLInputElement;
-      if (inputElement) {
+      if (inputElement && message.trim()) {
         inputElement.value = message;
         // Submit the form to send the message
         if (formRef.current) {
-          formRef.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
+          formRef.current.dispatchEvent(submitEvent);
         }
       }
     };
@@ -230,6 +231,7 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
                           {...register('content')}
                           placeholder="Type your message..."
                           className="pr-8 py-5 bg-gray-50"
+                          key="chat-input" // Add key to ensure proper re-render
                         />
                         <Label
                           htmlFor="file"
