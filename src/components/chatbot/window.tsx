@@ -148,36 +148,71 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
     
     return (
       <>
-        {/* Add style tag for consistent colors */}
+        {/* Add style tag for blue theme */}
         <style jsx global>{`
-          /* Ensure consistent text colors in the chatbot */
+          /* Blue theme for chatbot */
           .chatbot-window input,
           .chatbot-window textarea {
-            color: #1f2937 !important;
+            color: #1e40af !important;
+            border-color: #dbeafe !important;
           }
           
           .chatbot-window input::placeholder {
-            color: #9ca3af !important;
+            color: #60a5fa !important;
+          }
+          
+          .chatbot-window input:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 1px #3b82f6 !important;
           }
           
           .chatbot-window .ui-accordion-trigger {
-            color: #1f2937 !important;
+            color: #1e40af !important;
           }
           
           .chatbot-window .ui-accordion-content {
-            color: #4b5563 !important;
+            color: #3730a3 !important;
+          }
+
+          .blue-button {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+            border: none !important;
+            color: white !important;
+            transition: all 0.2s ease !important;
+          }
+
+          .blue-button:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+          }
+
+          .blue-button:active {
+            transform: translateY(0) !important;
+          }
+
+          .blue-input {
+            background: #f8fafc !important;
+            border: 1.5px solid #e2e8f0 !important;
+            transition: all 0.2s ease !important;
+          }
+
+          .blue-input:focus {
+            background: white !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
           }
         `}</style>
         
-        <div className="chatbot-window h-[450px] w-[350px] flex flex-col bg-white rounded-xl border-[1px] border-gray-200 overflow-hidden shadow-lg animate-in slide-in-from-bottom-3 duration-300 fixed bottom-16 right-4">
-          <div className="flex justify-between items-center px-6 py-2.5 bg-gradient-to-r from-blue-50 to-white border-b border-gray-100">
+        <div className="chatbot-window h-[450px] w-[350px] flex flex-col bg-white rounded-xl border-[1px] border-blue-200 overflow-hidden shadow-lg animate-in slide-in-from-bottom-3 duration-300 fixed bottom-16 right-4">
+          <div className="flex justify-between items-center px-6 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
             <div className="flex gap-3">
               <Avatar3D isActive={true} mood={avatarMood} />
               <div className="flex items-start flex-col justify-center">
-                <h3 className="text-sm font-semibold leading-none text-gray-800">
+                <h3 className="text-sm font-semibold leading-none text-blue-800">
                   Sales Rep - SmartRep AI
                 </h3>
-                <p className="text-[11px] text-gray-500 mt-0.5">{domainName.split('.com')[0]}</p>
+                <p className="text-[11px] text-blue-600 mt-0.5">{domainName.split('.com')[0]}</p>
                 {realtimeMode?.mode && (
                   <RealTimeMode
                     setChats={setChat}
@@ -197,7 +232,7 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
           </div>
           <TabsMenu
             triggers={BOT_TABS_MENU}
-            className="bg-transparent border-b border-gray-100 px-6 pt-1"
+            className="bg-transparent border-b border-blue-100 px-6 pt-1"
           >
             <TabsContent value="chat" className="px-0">
               <div className="flex flex-col h-full">
@@ -218,26 +253,27 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
                     <ContextualActions messages={chats} />
                   )}
                 </div>
-                <Separator className="bg-gray-100" />
-                <div className="p-4 bg-white">
+                <Separator className="bg-blue-100" />
+                
+                {/* Fixed Bottom Input Section with Blue Theme */}
+                <div className="p-3 bg-gradient-to-r from-blue-50 to-white border-t border-blue-100">
                   <form
                     ref={formRef}
                     onSubmit={onChat}
                     className="flex flex-col gap-2"
                   >
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <div className="relative flex-1">
                         <Input
                           {...register('content')}
                           placeholder="Type your message..."
-                          className="pr-8 py-5 bg-gray-50"
-                          key="chat-input" // Add key to ensure proper re-render
+                          className="blue-input pr-10 py-2.5 text-sm rounded-lg focus:outline-none"
                         />
                         <Label
                           htmlFor="file"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer hover:bg-blue-50 p-1 rounded transition-colors"
                         >
-                          <Paperclip className="w-4 h-4 text-gray-400" />
+                          <Paperclip className="w-4 h-4 text-blue-500 hover:text-blue-600" />
                         </Label>
                         <input
                           type="file"
@@ -246,22 +282,28 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
                           {...register('image')}
                         />
                       </div>
+                      
+                      {/* Send Button */}
                       <Button
                         type="submit"
                         size="icon"
-                        className="rounded-full h-10 w-10"
+                        className="blue-button rounded-full h-9 w-9 flex-shrink-0"
                       >
                         <Send className="w-4 h-4" />
                       </Button>
                       
-                      {/* Voice Assistant Integration */}
-                      <VoiceAssistant
-                        onMessage={handleVoiceMessage}
-                        chatRoomId={realtimeMode?.chatroom}
-                      />
+                      {/* Voice Assistant Button */}
+                      <div className="flex-shrink-0">
+                        <VoiceAssistant
+                          onMessage={handleVoiceMessage}
+                          chatRoomId={realtimeMode?.chatroom}
+                        />
+                      </div>
                     </div>
+                    
+                    {/* Error Message */}
                     {errors.content && (
-                      <p className="text-xs text-red-500">
+                      <p className="text-xs text-red-500 px-1">
                         {errors.content.message}
                       </p>
                     )}
@@ -273,26 +315,28 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
             <TabsContent value="help desk" className="px-0">
               <div className="h-[290px] overflow-y-auto overflow-x-hidden px-6 py-3 flex flex-col gap-2.5">
                 <div>
-                  <CardTitle className="text-sm text-gray-800">Help Desk</CardTitle>
-                  <CardDescription className="text-[10px] text-gray-500">
+                  <CardTitle className="text-sm text-blue-800">Help Desk</CardTitle>
+                  <CardDescription className="text-[10px] text-blue-600">
                     Browse from a list of questions people usually ask.
                   </CardDescription>
                 </div>
-                <Separator orientation="horizontal" className="bg-gray-100" />
+                <Separator orientation="horizontal" className="bg-blue-100" />
 
                 {helpdesk.map((desk) => (
                   <Accordion
                     key={desk.id}
                     trigger={desk.question}
                     content={desk.answer}
-                    className="text-gray-800"
+                    className="text-blue-800"
                   />
                 ))}
               </div>
             </TabsContent>
           </TabsMenu>
-          <div className="flex justify-center py-1.5 bg-gray-50 border-t border-gray-100">
-            <p className="text-gray-400 text-[10px]">Powered By SmartRep AI</p>
+          
+          {/* Footer */}
+          <div className="flex justify-center py-1.5 bg-blue-50 border-t border-blue-200">
+            <p className="text-blue-400 text-[10px]">Powered By SmartRep AI</p>
           </div>
         </div>
       </>
