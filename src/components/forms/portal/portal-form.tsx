@@ -57,10 +57,10 @@ const PortalForm = ({
   } = usePortal(customerId, domainid, email)
 
   useEffect(() => {
-    if (step == 3) {
+    if (step === 3) {
       onBookAppointment()
     }
-  }, [step])
+  }, [step, onBookAppointment])
 
   return (
     <form onSubmit={onNext}>

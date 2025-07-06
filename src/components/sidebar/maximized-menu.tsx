@@ -41,14 +41,20 @@ const MaxMenu = ({ current, domains, onExpand, onSignOut }: Props) => {
       <div className="flex flex-col justify-between h-full pt-4">
         <div className="flex flex-col justify-start">
           <p className="text-xs font-medium text-magenta mb-2 px-3">MENU</p>
-          {SIDE_BAR_MENU.map((menu, key) => (
-            <MenuItem
-              size="max"
-              {...menu}
-              key={key}
-              current={current}
-            />
-          ))}
+          <div className="menu-items-container">
+            {SIDE_BAR_MENU.map((menu, key) => (
+              <div 
+                key={key} 
+                className={`menu-item-wrapper ${menu.path === 'settings/voice-assistant' ? 'voice-assistant-wrapper' : ''}`}
+              >
+                <MenuItem
+                  size="max"
+                  {...menu}
+                  current={current}
+                />
+              </div>
+            ))}
+          </div>
           <DomainMenu domains={domains} />
         </div>
         <div className="flex flex-col pb-4">

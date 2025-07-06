@@ -169,8 +169,8 @@ export const useChatWindow = () => {
     if (contextChats && contextChats.length > 0) {
       // Find the first user message to get the email
       const userMessage = contextChats.find(chat => chat.role === 'user')
-      if (userMessage && userMessage.email) {
-        setCustomerEmail(userMessage.email)
+      if (userMessage && 'email' in userMessage) {
+        setCustomerEmail(userMessage.email as string)
       } else if (chatRooms.length > 0) {
         // Try to find the email from chatRooms
         const room = chatRooms.find(r => r.chatRoom[0].id === contextChatRoom)
@@ -225,21 +225,96 @@ export const useChatWindow = () => {
   useEffect(() => {
     if (!chatRoomInfo?.id) return
 
+    console.log('Conversation: Subscribing to channel:', chatRoomInfo.id);
     const channel = pusherClient.subscribe(chatRoomInfo.id)
+    const processedMessages = new Set<string>();
     
+    // Listen for regular messages
     channel.bind('message', (data: any) => {
+      console.log('Conversation: Received message event:', data);
+      
       // Ensure the message has both message and content properties
       const messageData = {
         ...data.message,
         content: data.message.message || data.message.content,
         message: data.message.message || data.message.content
       }
-      setChats(prev => [...prev, messageData])
-      setReadStatus(prev => ({ ...prev, [messageData.id]: 'delivered' }))
-      setTimeout(() => {
-        setReadStatus(prev => ({ ...prev, [messageData.id]: 'read' }))
-      }, 2000)
-    })
+      
+      // Create a unique identifier for this message
+      const messageIdentifier = `${messageData.id}-${messageData.content}-${messageData.role}`;
+      
+      // Only process if we haven't seen this message before
+      if (!processedMessages.has(messageIdentifier)) {
+        processedMessages.add(messageIdentifier);
+        
+        // Check if the message already exists in the chat
+        setChats(prev => {
+          const messageExists = prev.some(msg => 
+            msg.id === messageData.id || 
+            (msg.content === messageData.content && 
+             msg.role === messageData.role &&
+             Math.abs(new Date(msg.createdAt || Date.now()).getTime() - new Date(messageData.createdAt || Date.now()).getTime()) < 1000)
+          );
+          
+          if (messageExists) {
+            console.log('Conversation: Skipping duplicate message:', messageData.content);
+            return prev;
+          }
+          
+          console.log('Conversation: Adding new message to chat');
+          return [...prev, messageData];
+        });
+        
+        setReadStatus(prev => ({ ...prev, [messageData.id]: 'delivered' }))
+        setTimeout(() => {
+          setReadStatus(prev => ({ ...prev, [messageData.id]: 'read' }))
+        }, 2000)
+      }
+    });
+    
+    // Listen for real-time mode messages as well
+    channel.bind('realtime-mode', (data: any) => {
+      console.log('Conversation: Received realtime-mode event:', data);
+      
+      if (!data?.chat?.message) {
+        console.warn('Conversation: Invalid realtime message format:', data);
+        return;
+      }
+      
+      // Create a message object from realtime data
+      const messageData = {
+        id: data.chat.id || `realtime-${Date.now()}`,
+        role: data.chat.role,
+        content: data.chat.message,
+        message: data.chat.message,
+        createdAt: new Date(),
+        seen: false
+      };
+      
+      // Create a unique identifier for this message
+      const messageIdentifier = `${messageData.role}-${messageData.content}-${Date.now()}`;
+      
+      // Only process if we haven't seen this message before
+      if (!processedMessages.has(messageIdentifier)) {
+        processedMessages.add(messageIdentifier);
+        
+        // Check if the message already exists in the chat
+        setChats(prev => {
+          const messageExists = prev.some(msg => 
+            (msg.content === messageData.content && 
+             msg.role === messageData.role)
+          );
+          
+          if (messageExists) {
+            console.log('Conversation: Skipping duplicate realtime message:', messageData.content);
+            return prev;
+          }
+          
+          console.log('Conversation: Adding new realtime message to chat');
+          return [...prev, messageData];
+        });
+      }
+    });
 
     channel.bind('typing', () => {
       setIsTyping(true)
@@ -247,6 +322,7 @@ export const useChatWindow = () => {
     })
 
     return () => {
+      console.log('Conversation: Unsubscribing from channel:', chatRoomInfo.id);
       channel.unbind_all()
       pusherClient.unsubscribe(chatRoomInfo.id)
     }
@@ -296,7 +372,7 @@ export const useChatWindow = () => {
       // Create local message object
       const newMessage = {
         id: messageId,
-        role: 'assistant',
+        role: 'assistant' as const,
         content: values.content,
         message: values.content,
         createdAt: new Date(),
@@ -320,7 +396,7 @@ export const useChatWindow = () => {
         )
       } else {
         // Send via regular channel
-        await onOwnerSendMessage(chatRoomInfo.id, values.content)
+        await onOwnerSendMessage(chatRoomInfo.id, values.content, 'assistant')
       }
       
       // Update status after successful send

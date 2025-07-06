@@ -108,10 +108,14 @@ export const useChatBot = () => {
 
   const onStartChatting = handleSubmit(async (values) => {
     console.log('ALL VALUES', values)
+    
+    // Store values before they get reset
+    const imageFile = values.image?.[0];
+    const contentText = values.content;
 
-    if (values.image?.length) {
-      console.log('IMAGE fROM ', values.image[0])
-      const uploaded = await upload.uploadFile(values.image[0])
+    if (imageFile) {
+      console.log('IMAGE fROM ', imageFile)
+      const uploaded = await upload.uploadFile(imageFile)
       if (!onRealTime?.mode) {
         setOnChats((prev: any) => [
           ...prev,
@@ -145,13 +149,13 @@ export const useChatBot = () => {
       }
     }
 
-    if (values.content) {
+    if (contentText) {
       if (!onRealTime?.mode) {
         setOnChats((prev: any) => [
           ...prev,
           {
             role: 'user',
-            content: values.content,
+            content: contentText,
           },
         ])
       }
@@ -162,7 +166,7 @@ export const useChatBot = () => {
         currentBotId!,
         onChats,
         'user',
-        values.content
+        contentText
       )
 
       if (response) {
@@ -179,9 +183,11 @@ export const useChatBot = () => {
       }
     }
     
-    // Reset form after all processing is complete
-    reset()
+    // Reset form immediately after capturing values
+    reset();
   })
+  
+  // No need for the useEffect reset anymore as we're handling it directly in the submit handler
 
   return {
     botOpened,
@@ -211,26 +217,57 @@ export const useRealTime = (
     >
   >
 ) => {
-  const counterRef = useRef(1)
+  const processedMessagesRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    pusherClient.subscribe(chatRoom)
+    if (!chatRoom) return;
+    
+    console.log('Subscribing to Pusher channel:', chatRoom);
+    pusherClient.subscribe(chatRoom);
+    
     pusherClient.bind('realtime-mode', (data: any) => {
-      console.log('✅', data)
-      if (counterRef.current !== 1) {
-        setChats((prev: any) => [
-          ...prev,
-          {
-            role: data.chat.role,
-            content: data.chat.message,
-          },
-        ])
+      console.log('Received realtime message:', data);
+      
+      if (!data?.chat?.message) {
+        console.warn('Received invalid message format:', data);
+        return;
       }
-      counterRef.current += 1
-    })
+      
+      // Create a unique identifier for this message
+      const messageId = `${data.chat.role}-${data.chat.message}-${Date.now()}`;
+      
+      // Check if we've already processed this message
+      if (!processedMessagesRef.current.has(messageId)) {
+        processedMessagesRef.current.add(messageId);
+        
+        // Add message to chat
+        setChats((prev: any) => {
+          // Check if the message already exists in the chat (prevent duplicates)
+          const messageExists = prev.some((msg: { content: string; role: string }) => 
+            msg.content === data.chat.message && 
+            msg.role === data.chat.role
+          );
+          
+          if (messageExists) {
+            console.log('Duplicate message detected, skipping:', data.chat.message);
+            return prev;
+          }
+          
+          return [
+            ...prev,
+            {
+              role: data.chat.role,
+              content: data.chat.message,
+            },
+          ];
+        });
+      }
+    });
+    
     return () => {
-      pusherClient.unbind('realtime-mode')
-      pusherClient.unsubscribe(chatRoom)
-    }
-  }, [])
+      console.log('Unsubscribing from Pusher channel:', chatRoom);
+      pusherClient.unbind('realtime-mode');
+      pusherClient.unsubscribe(chatRoom);
+    };
+  }, [chatRoom, setChats]);
 }

@@ -34,14 +34,20 @@ export const MinMenu = ({
       </div>
       <div className="flex flex-col justify-between h-full pt-8">
         <div className="flex flex-col">
-          {SIDE_BAR_MENU.map((menu, key) => (
-            <MenuItem
-              size="min"
-              {...menu}
-              key={key}
-              current={current}
-            />
-          ))}
+          <div className="menu-items-container">
+            {SIDE_BAR_MENU.map((menu, key) => (
+              <div 
+                key={key} 
+                className={`menu-item-wrapper ${menu.path === 'settings/voice-assistant' ? 'voice-assistant-wrapper' : ''}`}
+              >
+                <MenuItem
+                  size="min"
+                  {...menu}
+                  current={current}
+                />
+              </div>
+            ))}
+          </div>
           <DomainMenu
             min
             domains={domains}

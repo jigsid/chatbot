@@ -57,6 +57,14 @@ export const onBookNewAppointment = async (
   email: string
 ) => {
   try {
+    // Parse the ISO string to a Date object that Prisma can handle
+    const parsedDate = new Date(date);
+    
+    if (isNaN(parsedDate.getTime())) {
+      console.error('Invalid date format:', date);
+      return { status: 400, message: 'Invalid date format' };
+    }
+    
     const booking = await client.customer.update({
       where: {
         id: customerId,
@@ -66,7 +74,7 @@ export const onBookNewAppointment = async (
           create: {
             domainId,
             slot,
-            date,
+            date: parsedDate,
             email,
           },
         },
@@ -74,10 +82,13 @@ export const onBookNewAppointment = async (
     })
 
     if (booking) {
-      return { status: 200, message: 'Booking created' }
+      return { status: 200, message: 'Booking created successfully' }
+    } else {
+      return { status: 500, message: 'Failed to create booking' }
     }
   } catch (error) {
-    console.log(error)
+    console.error('Error creating booking:', error)
+    return { status: 500, message: 'An error occurred while creating the booking' }
   }
 }
 
@@ -86,6 +97,23 @@ export const saveAnswers = async (
   customerId: string
 ) => {
   try {
+    // Validate customerId
+    if (!customerId) {
+      return {
+        status: 400,
+        message: 'Customer ID is required',
+      }
+    }
+    
+    // Check if there are any questions to save
+    if (Object.keys(questions).length === 0) {
+      return {
+        status: 200,
+        message: 'No questions to update',
+      }
+    }
+    
+    // Update each question
     for (const question in questions) {
       await client.customer.update({
         where: { id: customerId },
@@ -103,12 +131,17 @@ export const saveAnswers = async (
         },
       })
     }
+    
     return {
       status: 200,
-      messege: 'Updated Responses',
+      message: 'Updated Responses',
     }
   } catch (error) {
-    console.log(error)
+    console.error('Error saving answers:', error)
+    return {
+      status: 500,
+      message: 'Failed to update responses',
+    }
   }
 }
 

@@ -10,6 +10,31 @@ body {
   background: transparent;
 }
 
+/* Voice Assistant menu item styling for consistent positioning */
+.voice-assistant-item {
+  height: 40px !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.voice-assistant-wrapper {
+  height: 40px !important;
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ensure menu items have consistent heights */
+.menu-items-container {
+  position: relative;
+}
+
+/* Prevent text from shifting during transitions */
+.menu-item-wrapper {
+  position: relative;
+}
+
 .chat-window::-webkit-scrollbar {
   width: 8px;
   height: 8px;

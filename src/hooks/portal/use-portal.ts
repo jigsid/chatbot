@@ -42,12 +42,15 @@ export const usePortal = (
 
       const savedAnswers = await saveAnswers(questions, customerId)
 
-      if (savedAnswers) {
+      if (savedAnswers && date) {
+        // Format date as ISO string for server action
+        const formattedDate = date.toISOString();
+        
         const booked = await onBookNewAppointment(
           domainId,
           customerId,
           values.slot,
-          values.date,
+          formattedDate,
           email
         )
         if (booked && booked.status == 200) {
@@ -59,8 +62,23 @@ export const usePortal = (
         }
 
         setLoading(false)
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Please select a date and time',
+          variant: 'destructive'
+        })
+        setLoading(false)
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to book appointment',
+        variant: 'destructive'
+      })
+      setLoading(false)
+    }
   })
 
   const onSelectedTimeSlot = (slot: string) => setSelectedSlot(slot)

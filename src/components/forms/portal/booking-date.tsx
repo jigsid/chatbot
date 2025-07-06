@@ -69,6 +69,12 @@ const BookAppointmentDate = ({
                 selected={date}
                 onSelect={onBooking}
                 className="rounded-md border"
+                disabled={(date) => {
+                  // Disable past dates
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return date < today || date > new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+                }}
               />
             </div>
             <div className="flex flex-col gap-5">
@@ -84,9 +90,11 @@ const BookAppointmentDate = ({
                       'px-10 py-4',
                       bookings?.some(
                         (booking) =>
-                          `${booking.date.getDate()}/${booking.date.getMonth()}` ===
-                            `${date?.getDate()}/${date?.getMonth()}` &&
-                          booking.slot == slot.slot
+                          date && 
+                          booking.date.getDate() === date.getDate() &&
+                          booking.date.getMonth() === date.getMonth() &&
+                          booking.date.getFullYear() === date.getFullYear() &&
+                          booking.slot === slot.slot
                       )
                         ? 'bg-gray-300'
                         : 'cursor-pointer border-orange hover:bg-grandis transition duration-150 ease-in-out'
@@ -95,7 +103,11 @@ const BookAppointmentDate = ({
                     <Input
                       {...(bookings?.some(
                         (booking) =>
-                          booking.date == date && booking.slot == slot.slot
+                          date &&
+                          booking.date.getDate() === date.getDate() &&
+                          booking.date.getMonth() === date.getMonth() &&
+                          booking.date.getFullYear() === date.getFullYear() &&
+                          booking.slot === slot.slot
                       )
                         ? {
                             disabled: true,
