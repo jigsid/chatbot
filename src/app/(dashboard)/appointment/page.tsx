@@ -10,9 +10,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { currentUser } from '@clerk/nextjs'
 import { Plus } from 'lucide-react'
 import React, { Suspense } from 'react'
+import { AVAILABLE_TIME_SLOTS } from '@/constants/timeslots'
+import AppointmentForm from '@/components/appointment/appointment-form'
 
 // Loading component
 function AppointmentPageSkeleton() {
@@ -165,7 +168,7 @@ async function AppointmentsContent() {
   }
 }
 
-const Page = () => {
+export default function Page() {
   return (
     <div className="flex flex-col h-full">
       <InfoBar />
@@ -175,9 +178,7 @@ const Page = () => {
             <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
             <p className="text-muted-foreground">Manage your appointment bookings</p>
           </div>
-          <Button className="gap-1">
-            <Plus className="w-4 h-4" /> Create New
-          </Button>
+          <AppointmentForm />
         </div>
 
         <Suspense fallback={<AppointmentPageSkeleton />}>
@@ -187,5 +188,3 @@ const Page = () => {
     </div>
   )
 }
-
-export default Page

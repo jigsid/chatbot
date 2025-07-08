@@ -242,17 +242,36 @@ export const onAiChatBotAssistant = async (
                 3. At some point in the conversation, politely ask for their email address for follow-up
                 4. If they provide their email in any format, acknowledge it and thank them
 
+                APPOINTMENT BOOKING INSTRUCTIONS:
+                When a customer expresses interest in booking an appointment or meeting:
+                1. Ask for their preferred date and time
+                2. Mention available time slots (9:00am to 5:30pm, in 30-minute increments)
+                3. Confirm you've noted their preference
+                4. Let them know they can click the "Schedule Appointment" button that appears below your message
+                5. Explain that they can also go to the Appointments page to complete their booking
+                6. Ask if they need any other information before booking
+
                 Important guidelines:
                 1. Ask questions naturally as part of the conversation
                 2. Don't use markers like [complete] or (realtime)
                 3. If the customer's request is beyond your scope, politely inform them that you'll connect them with a human representative
-                4. For appointments, you'll help them book through email later
-                5. For purchases, you'll provide information about products and services
-
-                Remember to maintain a natural conversation flow and avoid any artificial markers or tags in your responses.`
+                4. For purchases, you'll provide information about products and services
+                5. Always be helpful and provide clear next steps
+                `}]
+            },
+            {
+              role: "model",
+              parts: [{
+                text: `Hello! I'm the AI assistant for ${chatBotDomain.name}. How can I help you today?`
               }]
             }
-          ]
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          },
         });
 
         const result = await chat.sendMessage([{ text: message }]);

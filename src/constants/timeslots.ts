@@ -19,6 +19,9 @@ export const APPOINTMENT_TIME_SLOTS: AppointmentTimeSlots[] = [
   { slot: '5:30pm' }
 ]
 
+// Export time slots as string array for use in UI components
+export const AVAILABLE_TIME_SLOTS = APPOINTMENT_TIME_SLOTS.map(item => item.slot)
+
 // Add timezone support
 export const getLocalTimeSlot = (slot: string, timezone: string = Intl.DateTimeFormat().resolvedOptions().timeZone): string => {
   const [time, meridian] = slot.split(/(?=[ap]m)/i);

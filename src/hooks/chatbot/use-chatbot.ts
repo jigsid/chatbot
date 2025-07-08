@@ -128,24 +128,56 @@ export const useChatBot = () => {
 
       console.log('🟡 RESPONSE FROM UC', uploaded.uuid)
       setOnAiTyping(true)
-      const response = await onAiChatBotAssistant(
-        currentBotId!,
-        onChats,
-        'user',
-        uploaded.uuid
-      )
-
-      if (response) {
-        setOnAiTyping(false)
-        if (response.live) {
-          setOnRealTime((prev) => ({
-            ...prev,
-            chatroom: response.chatRoom,
-            mode: response.live,
-          }))
+      
+      try {
+        // Use the new API route
+        const response = await fetch('/api/chatbot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: currentBotId,
+            chat: onChats,
+            author: 'user',
+            message: uploaded.uuid
+          }),
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.response) {
+          setOnAiTyping(false);
+          if (data.live) {
+            setOnRealTime((prev) => ({
+              ...prev,
+              chatroom: data.chatRoom,
+              mode: data.live,
+            }));
+          } else {
+            setOnChats((prev: any) => [...prev, data.response]);
+          }
         } else {
-          setOnChats((prev: any) => [...prev, response.response])
+          console.error('Error from chatbot API:', data.error);
+          setOnAiTyping(false);
+          setOnChats((prev: any) => [
+            ...prev, 
+            { 
+              role: 'assistant', 
+              content: 'I apologize, but I encountered an error. Please try again later.' 
+            }
+          ]);
         }
+      } catch (error) {
+        console.error('Failed to fetch chatbot response:', error);
+        setOnAiTyping(false);
+        setOnChats((prev: any) => [
+          ...prev, 
+          { 
+            role: 'assistant', 
+            content: 'I apologize, but I encountered an error. Please try again later.' 
+          }
+        ]);
       }
     }
 
@@ -162,24 +194,55 @@ export const useChatBot = () => {
 
       setOnAiTyping(true)
 
-      const response = await onAiChatBotAssistant(
-        currentBotId!,
-        onChats,
-        'user',
-        contentText
-      )
-
-      if (response) {
-        setOnAiTyping(false)
-        if (response.live) {
-          setOnRealTime((prev) => ({
-            ...prev,
-            chatroom: response.chatRoom,
-            mode: response.live,
-          }))
+      try {
+        // Use the new API route
+        const response = await fetch('/api/chatbot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: currentBotId,
+            chat: onChats,
+            author: 'user',
+            message: contentText
+          }),
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.response) {
+          setOnAiTyping(false);
+          if (data.live) {
+            setOnRealTime((prev) => ({
+              ...prev,
+              chatroom: data.chatRoom,
+              mode: data.live,
+            }));
+          } else {
+            setOnChats((prev: any) => [...prev, data.response]);
+          }
         } else {
-          setOnChats((prev: any) => [...prev, response.response])
+          console.error('Error from chatbot API:', data.error);
+          setOnAiTyping(false);
+          setOnChats((prev: any) => [
+            ...prev, 
+            { 
+              role: 'assistant', 
+              content: 'I apologize, but I encountered an error. Please try again later.' 
+            }
+          ]);
         }
+      } catch (error) {
+        console.error('Failed to fetch chatbot response:', error);
+        setOnAiTyping(false);
+        setOnChats((prev: any) => [
+          ...prev, 
+          { 
+            role: 'assistant', 
+            content: 'I apologize, but I encountered an error. Please try again later.' 
+          }
+        ]);
       }
     }
     

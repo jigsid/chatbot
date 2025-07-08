@@ -4,6 +4,7 @@ import React from 'react'
 import { Calendar, FileText, Phone, Mail, Clock, ExternalLink } from 'lucide-react'
 import { Button } from '../ui/button'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 
 type ActionType = 'schedule' | 'document' | 'contact' | 'reminder' | 'link';
 
@@ -20,6 +21,7 @@ type Props = {
 
 const ContextualActions = ({ messages }: Props) => {
   const [actions, setActions] = React.useState<Action[]>([]);
+  const router = useRouter();
   
   // Analyze conversation to determine relevant actions
   React.useEffect(() => {
@@ -36,14 +38,17 @@ const ContextualActions = ({ messages }: Props) => {
       lastUserMessage.includes('appointment') || 
       lastUserMessage.includes('book') ||
       lastUserMessage.includes('meet') ||
+      lastUserMessage.includes('when can') ||
+      lastUserMessage.includes('available') ||
       lastBotMessage.includes('schedule') ||
-      lastBotMessage.includes('appointment')
+      lastBotMessage.includes('appointment') ||
+      lastBotMessage.includes('booking')
     ) {
       newActions.push({
         type: 'schedule',
-        label: 'Schedule Meeting',
+        label: 'Schedule Appointment',
         icon: <Calendar className="w-3 h-3" />,
-        onClick: () => window.open('https://calendly.com', '_blank')
+        onClick: () => router.push('/appointment')
       });
     }
     
@@ -100,7 +105,7 @@ const ContextualActions = ({ messages }: Props) => {
     // Limit to 3 actions maximum
     setActions(newActions.slice(0, 3));
     
-  }, [messages]);
+  }, [messages, router]);
   
   if (actions.length === 0) return null;
   
