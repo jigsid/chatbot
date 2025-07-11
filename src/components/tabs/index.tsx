@@ -40,4 +40,4 @@ const TabsMenu = ({ triggers, children, className, button }: Props) => {
   )
 }
 
-export default TabsMenu
+export default TabsMenu 

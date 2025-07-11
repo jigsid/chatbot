@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@/lib/prisma';
 import { pusherServer } from '@/lib/utils';
 
+// Helper function to trigger Pusher events safely
+const triggerPusherEvent = async (channelId: string, eventName: string, data: any) => {
+  if (!pusherServer) {
+    console.warn('Pusher server not initialized, skipping event', { channelId, eventName });
+    return false;
+  }
+  
+  try {
+    await pusherServer.trigger(channelId, eventName, data);
+    return true;
+  } catch (error) {
+    console.error('Error triggering Pusher event:', error);
+    return false;
+  }
+};
+
 // This endpoint receives messages from external chatbot
 export async function POST(req: NextRequest) {
   try {
@@ -49,7 +65,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Notify via Pusher
-      await pusherServer.trigger(newCustomer.chatRoom[0].id, 'message', {
+      await triggerPusherEvent(newCustomer.chatRoom[0].id, 'message', {
         message: {
           id: chatMessage.id,
           message,
@@ -72,7 +88,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Notify via Pusher
-    await pusherServer.trigger(customer.chatRoom[0].id, 'message', {
+    await triggerPusherEvent(customer.chatRoom[0].id, 'message', {
       message: {
         id: chatMessage.id,
         message,

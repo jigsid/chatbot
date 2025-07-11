@@ -45,7 +45,7 @@ const MaxMenu = ({ current, domains, onExpand, onSignOut }: Props) => {
             {SIDE_BAR_MENU.map((menu, key) => (
               <div 
                 key={key} 
-                className={`menu-item-wrapper ${menu.path === 'settings/voice-assistant' ? 'voice-assistant-wrapper' : ''}`}
+                className="menu-item-wrapper"
               >
                 <MenuItem
                   size="max"

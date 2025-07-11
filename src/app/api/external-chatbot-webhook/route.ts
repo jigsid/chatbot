@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@/lib/prisma';
 import { pusherServer } from '@/lib/utils';
 
+// Helper function to trigger Pusher events safely
+const triggerPusherEvent = async (channelId: string, eventName: string, data: any) => {
+  if (!pusherServer) {
+    console.warn('Pusher server not initialized, skipping event', { channelId, eventName });
+    return false;
+  }
+  
+  try {
+    await pusherServer.trigger(channelId, eventName, data);
+    return true;
+  } catch (error) {
+    console.error('Error triggering Pusher event:', error);
+    return false;
+  }
+};
+
 // This webhook receives messages from external chatbots and the embedded chatbot
 export async function POST(req: NextRequest) {
   try {
@@ -38,7 +54,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Notify via Pusher
-        await pusherServer.trigger(chatRoomId, 'message', {
+        await triggerPusherEvent(chatRoomId, 'message', {
           message: {
             id: chatMessage.id,
             message,
@@ -95,7 +111,7 @@ export async function POST(req: NextRequest) {
       });
       
       // Refresh customer data
-      customer = await client.customer.findUnique({
+      const refreshedCustomer = await client.customer.findUnique({
         where: {
           id: customer.id,
         },
@@ -103,14 +119,23 @@ export async function POST(req: NextRequest) {
           chatRoom: true,
         },
       });
+      
+      if (!refreshedCustomer || !refreshedCustomer.chatRoom || refreshedCustomer.chatRoom.length === 0) {
+        return NextResponse.json({ error: 'Failed to create chat room' }, { status: 500 });
+      }
+      
+      customer = refreshedCustomer;
     }
+
+    // Now we can be sure customer and customer.chatRoom[0] exist
+    const chatRoomForMessages = customer.chatRoom[0].id;
 
     // Store the message
     const chatMessage = await client.chatMessage.create({
       data: {
         message,
         role,
-        chatRoomId: customer.chatRoom[0].id,
+        chatRoomId: chatRoomForMessages,
       },
     });
 
@@ -127,12 +152,12 @@ export async function POST(req: NextRequest) {
             data: {
               message: aiResponse,
               role: 'assistant',
-              chatRoomId: customer.chatRoom[0].id,
+              chatRoomId: chatRoomForMessages,
             },
           });
           
           // Notify via Pusher
-          await pusherServer.trigger(customer.chatRoom[0].id, 'message', {
+          await triggerPusherEvent(chatRoomForMessages, 'message', {
             message: {
               id: aiMessage.id,
               message: aiResponse,
@@ -148,7 +173,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Notify via Pusher
-    await pusherServer.trigger(customer.chatRoom[0].id, 'message', {
+    await triggerPusherEvent(chatRoomForMessages, 'message', {
       message: {
         id: chatMessage.id,
         message,
@@ -160,7 +185,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      chatRoomId: customer.chatRoom[0].id,
+      chatRoomId: chatRoomForMessages,
       messageId: chatMessage.id
     });
   } catch (error) {

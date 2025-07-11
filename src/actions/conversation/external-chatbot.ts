@@ -3,6 +3,22 @@
 import { client } from '@/lib/prisma'
 import { pusherServer } from '@/lib/utils'
 
+// Helper function to trigger Pusher events safely
+const triggerPusherEvent = async (channelId: string, eventName: string, data: any) => {
+  if (!pusherServer) {
+    console.warn('Pusher server not initialized, skipping event', { channelId, eventName });
+    return false;
+  }
+  
+  try {
+    await pusherServer.trigger(channelId, eventName, data);
+    return true;
+  } catch (error) {
+    console.error('Error triggering Pusher event:', error);
+    return false;
+  }
+};
+
 // Configuration for external chatbot
 const EXTERNAL_CHATBOT_URL = process.env.EXTERNAL_CHATBOT_URL || 'https://external-chatbot-api.example.com/messages';
 
@@ -37,7 +53,7 @@ export const sendMessageToExternalChatbot = async (
     });
 
     // Notify clients via Pusher
-    await pusherServer.trigger(chatRoomId, 'message', {
+    await triggerPusherEvent(chatRoomId, 'message', {
       message: {
         id: chatMessage.id,
         message,

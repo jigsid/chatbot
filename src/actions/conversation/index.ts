@@ -81,7 +81,16 @@ export const onGetDomainChatRooms = async (id: string) => {
         },
       });
       
-      return { customer: domains.flatMap(domain => domain.customer) };
+      // Filter out any customers with empty chatRoom arrays or invalid data
+      const validCustomers = domains.flatMap(domain => 
+        domain.customer.filter(customer => 
+          customer.chatRoom && 
+          customer.chatRoom.length > 0 && 
+          customer.chatRoom[0].id
+        )
+      );
+      
+      return { customer: validCustomers };
     }
     
     // Validate UUID format
@@ -121,8 +130,15 @@ export const onGetDomainChatRooms = async (id: string) => {
       },
     })
 
-    if (domains) {
-      return domains
+    if (domains && domains.customer) {
+      // Filter out any customers with empty chatRoom arrays or invalid data
+      const validCustomers = domains.customer.filter(customer => 
+        customer.chatRoom && 
+        customer.chatRoom.length > 0 && 
+        customer.chatRoom[0].id
+      );
+      
+      return { customer: validCustomers };
     }
     return { customer: [] };
   } catch (error) {
@@ -186,6 +202,11 @@ export const onRealTimeChat = async (
 ) => {
   console.log('Triggering realtime-mode event:', { chatroomId, message, id, role });
   
+  if (!pusherServer) {
+    console.warn('Pusher server not initialized, skipping realtime chat event');
+    return false;
+  }
+  
   try {
     await pusherServer.trigger(chatroomId, 'realtime-mode', {
       chat: {
@@ -196,8 +217,10 @@ export const onRealTimeChat = async (
       },
     });
     console.log('Successfully triggered realtime-mode event');
+    return true;
   } catch (error) {
     console.error('Error triggering realtime-mode event:', error);
+    return false;
   }
 }
 

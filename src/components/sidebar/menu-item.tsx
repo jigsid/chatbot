@@ -12,8 +12,6 @@ type Props = {
 }
 
 const MenuItem = ({ size, path, icon, label, current, onSignOut }: Props) => {
-  // Check if this is the Voice Assistant menu item
-  const isVoiceAssistant = path === 'settings/voice-assistant';
   
   switch (size) {
     case 'max':
@@ -26,13 +24,9 @@ const MenuItem = ({ size, path, icon, label, current, onSignOut }: Props) => {
               ? 'text-white hover:bg-magenta/10 hover:text-magenta'
               : current == path
               ? 'bg-magenta font-medium text-white shadow-sm'
-              : 'text-white hover:bg-magenta/10 hover:text-magenta',
-            // Add special class for Voice Assistant
-            isVoiceAssistant ? 'voice-assistant-item' : ''
+              : 'text-white hover:bg-magenta/10 hover:text-magenta'
           )}
           href={path ? `/${path}` : '#'}
-          style={isVoiceAssistant ? { height: '40px', position: 'relative' } : {}}
-          data-voice-assistant={isVoiceAssistant ? 'true' : 'false'}
         >
           <div className="w-5 h-5 flex-shrink-0">
             {icon}
@@ -50,13 +44,9 @@ const MenuItem = ({ size, path, icon, label, current, onSignOut }: Props) => {
               ? 'text-white hover:bg-magenta/10 hover:text-magenta'
               : current == path
               ? 'bg-magenta font-medium text-white shadow-sm'
-              : 'text-white hover:bg-magenta/10 hover:text-magenta',
-            // Add special class for Voice Assistant
-            isVoiceAssistant ? 'voice-assistant-item' : ''
+              : 'text-white hover:bg-magenta/10 hover:text-magenta'
           )}
           href={path ? `/${path}` : '#'}
-          style={isVoiceAssistant ? { height: '40px', position: 'relative' } : {}}
-          data-voice-assistant={isVoiceAssistant ? 'true' : 'false'}
         >
           <div className="w-5 h-5 flex-shrink-0">
             {icon}

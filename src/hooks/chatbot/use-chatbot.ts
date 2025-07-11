@@ -280,57 +280,53 @@ export const useRealTime = (
     >
   >
 ) => {
-  const processedMessagesRef = useRef<Set<string>>(new Set());
+  const [liveChat, setLiveChat] = useState<boolean>(false)
 
   useEffect(() => {
-    if (!chatRoom) return;
+    if (!pusherClient || !chatRoom) return;
     
-    console.log('Subscribing to Pusher channel:', chatRoom);
-    pusherClient.subscribe(chatRoom);
-    
-    pusherClient.bind('realtime-mode', (data: any) => {
-      console.log('Received realtime message:', data);
+    try {
+      console.log('SETTING UP REALTIME MODE WITH', chatRoom)
+      pusherClient.subscribe(chatRoom);
       
-      if (!data?.chat?.message) {
-        console.warn('Received invalid message format:', data);
-        return;
-      }
-      
-      // Create a unique identifier for this message
-      const messageId = `${data.chat.role}-${data.chat.message}-${Date.now()}`;
-      
-      // Check if we've already processed this message
-      if (!processedMessagesRef.current.has(messageId)) {
-        processedMessagesRef.current.add(messageId);
-        
-        // Add message to chat
-        setChats((prev: any) => {
-          // Check if the message already exists in the chat (prevent duplicates)
-          const messageExists = prev.some((msg: { content: string; role: string }) => 
-            msg.content === data.chat.message && 
-            msg.role === data.chat.role
-          );
-          
-          if (messageExists) {
-            console.log('Duplicate message detected, skipping:', data.chat.message);
-            return prev;
+      pusherClient.bind('realtime-mode', (data: any) => {
+        console.log('PUSHER EVENTS', data)
+        if (data.status == 'offline') {
+          pusherClient?.unbind('realtime-mode');
+          pusherClient?.unsubscribe(chatRoom);
+          setLiveChat(false)
+        } else if (data.mode) {
+          setLiveChat(data.mode)
+        } else {
+          setLiveChat(false)
+          if (data.role) {
+            setChats((prev) => [
+              ...prev,
+              {
+                role: data.role,
+                content: data.content,
+              },
+            ])
           }
-          
-          return [
-            ...prev,
-            {
-              role: data.chat.role,
-              content: data.chat.message,
-            },
-          ];
-        });
-      }
-    });
-    
+        }
+      })
+    } catch (error) {
+      console.error('Error setting up real-time chat:', error);
+    }
+
     return () => {
-      console.log('Unsubscribing from Pusher channel:', chatRoom);
-      pusherClient.unbind('realtime-mode');
-      pusherClient.unsubscribe(chatRoom);
-    };
-  }, [chatRoom, setChats]);
+      try {
+        if (pusherClient) {
+          pusherClient.unbind('realtime-mode');
+          pusherClient.unsubscribe(chatRoom);
+        }
+      } catch (error) {
+        console.error('Error cleaning up Pusher subscription:', error);
+      }
+    }
+  }, [chatRoom])
+
+  return {
+    liveChat,
+  }
 }

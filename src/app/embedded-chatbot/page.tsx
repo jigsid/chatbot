@@ -54,21 +54,25 @@ export default function EmbeddedChatbot() {
   
   // Set up Pusher subscription when chatRoomId is available
   useEffect(() => {
-    if (!chatRoomId) return
+    if (!chatRoomId || !pusherClient) return
     
-    const channel = pusherClient.subscribe(chatRoomId)
-    
-    channel.bind('message', (data: any) => {
-      if (data.message.role === 'assistant') {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: data.message.message
-        }])
+    try {
+      const channel = pusherClient.subscribe(chatRoomId)
+      
+      channel.bind('message', (data: any) => {
+        if (data.message.role === 'assistant') {
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: data.message.message
+          }])
+        }
+      })
+      
+      return () => {
+        pusherClient.unsubscribe(chatRoomId)
       }
-    })
-    
-    return () => {
-      pusherClient.unsubscribe(chatRoomId)
+    } catch (error) {
+      console.error('Error setting up Pusher subscription:', error)
     }
   }, [chatRoomId])
   

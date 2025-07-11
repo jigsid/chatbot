@@ -9,7 +9,7 @@ import { UrgentIcon } from '@/icons/urgent-icon'
 type Props = {
   title: string
   description?: string
-  createdAt: Date
+  createdAt?: Date
   id: string
   onChat(): void
   seen?: boolean
@@ -23,10 +23,11 @@ const ChatCard = ({
   id,
   seen,
 }: Props) => {
-  const { messageSentAt, urgent } = useChatTime(createdAt, id)
+  const { messageSentAt, urgent } = useChatTime(createdAt || new Date(), id)
 
   // Format email for display
   const formatEmail = (email: string) => {
+    if (!email) return 'Unknown';
     if (email.length > 20) {
       const atIndex = email.indexOf('@');
       if (atIndex > 0) {
@@ -69,7 +70,7 @@ const ChatCard = ({
           </div>
           <div className="flex-shrink-0 flex justify-end">
             <CardDescription className="text-xs whitespace-nowrap">
-              {createdAt ? messageSentAt : ''}
+              {messageSentAt || ''}
             </CardDescription>
           </div>
         </div>

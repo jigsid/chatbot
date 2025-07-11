@@ -1,7 +1,7 @@
 'use client'
 import { useConversation } from '@/hooks/conversation/use-conversation'
 import React, { useEffect } from 'react'
-import TabsMenu from '../tabs/intex'
+import TabsMenu from '../tabs'
 import { TABS_MENU } from '@/constants/menu'
 import { TabsContent } from '../ui/tabs'
 import ConversationSearch from './search'
@@ -30,7 +30,10 @@ const ConversationMenu = ({ domains }: Props) => {
     }
   }, [domains, setValue]);
 
-  const isExpired = (createdAt: Date) => {
+  const isExpired = (createdAt: Date | undefined) => {
+    // Return false if createdAt is undefined
+    if (!createdAt) return false;
+    
     // Example logic: consider chat expired if older than 30 days
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -38,8 +41,8 @@ const ConversationMenu = ({ domains }: Props) => {
   }
 
   const isStarred = (room: any) => {
-    // Example logic: check if the room has a starred flag or similar property
-    return room.starred // Adjust this logic based on your actual data structure
+    // Safely check if the room has a starred property
+    return room && room.chatRoom && room.chatRoom[0] && room.chatRoom[0].starred === true
   }
 
   return (
@@ -58,13 +61,13 @@ const ConversationMenu = ({ domains }: Props) => {
               {chatRooms.length ? (
                 chatRooms.map((room) => (
                   <ChatCard
-                    seen={room.chatRoom[0].message[0]?.seen}
-                    id={room.chatRoom[0].id}
-                    onChat={() => onGetActiveChatMessages(room.chatRoom[0].id)}
-                    createdAt={room.chatRoom[0].message[0]?.createdAt}
-                    key={room.chatRoom[0].id}
-                    title={room.email!}
-                    description={room.chatRoom[0].message[0]?.message}
+                    seen={room?.chatRoom?.[0]?.message?.[0]?.seen}
+                    id={room?.chatRoom?.[0]?.id}
+                    onChat={() => onGetActiveChatMessages(room?.chatRoom?.[0]?.id)}
+                    createdAt={room?.chatRoom?.[0]?.message?.[0]?.createdAt}
+                    key={room?.chatRoom?.[0]?.id}
+                    title={room?.email || 'Unknown'}
+                    description={room?.chatRoom?.[0]?.message?.[0]?.message || 'No message'}
                   />
                 ))
               ) : (
@@ -80,13 +83,13 @@ const ConversationMenu = ({ domains }: Props) => {
               {chatRooms.length ? (
                 chatRooms.map((room) => (
                   <ChatCard
-                    seen={room.chatRoom[0].message[0]?.seen}
-                    id={room.chatRoom[0].id}
-                    onChat={() => onGetActiveChatMessages(room.chatRoom[0].id)}
-                    createdAt={room.chatRoom[0].message[0]?.createdAt}
-                    key={room.chatRoom[0].id}
-                    title={room.email!}
-                    description={room.chatRoom[0].message[0]?.message}
+                    seen={room?.chatRoom?.[0]?.message?.[0]?.seen}
+                    id={room?.chatRoom?.[0]?.id}
+                    onChat={() => onGetActiveChatMessages(room?.chatRoom?.[0]?.id)}
+                    createdAt={room?.chatRoom?.[0]?.message?.[0]?.createdAt}
+                    key={room?.chatRoom?.[0]?.id}
+                    title={room?.email || 'Unknown'}
+                    description={room?.chatRoom?.[0]?.message?.[0]?.message || 'No message'}
                   />
                 ))
               ) : (
@@ -101,16 +104,16 @@ const ConversationMenu = ({ domains }: Props) => {
             <Loader loading={loading}>
               {chatRooms.length ? (
                 chatRooms
-                  .filter(room => isExpired(room.chatRoom[0].createdAt))
+                  .filter(room => room?.chatRoom?.[0]?.createdAt && isExpired(room.chatRoom[0].createdAt))
                   .map((room) => (
                     <ChatCard
-                      seen={room.chatRoom[0].message[0]?.seen}
-                      id={room.chatRoom[0].id}
-                      onChat={() => onGetActiveChatMessages(room.chatRoom[0].id)}
-                      createdAt={room.chatRoom[0].message[0]?.createdAt}
-                      key={room.chatRoom[0].id}
-                      title={room.email!}
-                      description={room.chatRoom[0].message[0]?.message}
+                      seen={room?.chatRoom?.[0]?.message?.[0]?.seen}
+                      id={room?.chatRoom?.[0]?.id}
+                      onChat={() => onGetActiveChatMessages(room?.chatRoom?.[0]?.id)}
+                      createdAt={room?.chatRoom?.[0]?.message?.[0]?.createdAt}
+                      key={room?.chatRoom?.[0]?.id}
+                      title={room?.email || 'Unknown'}
+                      description={room?.chatRoom?.[0]?.message?.[0]?.message || 'No message'}
                     />
                   ))
               ) : (
@@ -128,13 +131,13 @@ const ConversationMenu = ({ domains }: Props) => {
                   .filter(room => isStarred(room))
                   .map((room) => (
                     <ChatCard
-                      seen={room.chatRoom[0].message[0]?.seen}
-                      id={room.chatRoom[0].id}
-                      onChat={() => onGetActiveChatMessages(room.chatRoom[0].id)}
-                      createdAt={room.chatRoom[0].message[0]?.createdAt}
-                      key={room.chatRoom[0].id}
-                      title={room.email!}
-                      description={room.chatRoom[0].message[0]?.message}
+                      seen={room?.chatRoom?.[0]?.message?.[0]?.seen}
+                      id={room?.chatRoom?.[0]?.id}
+                      onChat={() => onGetActiveChatMessages(room?.chatRoom?.[0]?.id)}
+                      createdAt={room?.chatRoom?.[0]?.message?.[0]?.createdAt}
+                      key={room?.chatRoom?.[0]?.id}
+                      title={room?.email || 'Unknown'}
+                      description={room?.chatRoom?.[0]?.message?.[0]?.message || 'No message'}
                     />
                   ))
               ) : (

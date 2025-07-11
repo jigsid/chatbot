@@ -16,6 +16,7 @@ import { Plus } from 'lucide-react'
 import React, { Suspense } from 'react'
 import { AVAILABLE_TIME_SLOTS } from '@/constants/timeslots'
 import AppointmentForm from '@/components/appointment/appointment-form'
+import { formatDate, formatTime } from '@/lib/utils'
 
 // Loading component
 function AppointmentPageSkeleton() {
@@ -112,29 +113,30 @@ async function AppointmentsContent() {
                   className="rounded-xl overflow-hidden mt-4"
                 >
                   <CardContent className="p-0 flex">
-                    <div className="w-4/12 text-xl bg-peach py-10 flex justify-center items-center font-bold">
+                    <div className="w-5/12 text-xl bg-peach py-10 flex justify-center items-center font-bold">
                       {booking.slot}
                     </div>
                     <div className="flex flex-col flex-1">
-                      <div className="flex justify-between w-full p-3">
-                        <p className="text-sm">
-                          created
-                          <br />
-                          {booking.createdAt.getHours()}{' '}
-                          {booking.createdAt.getMinutes()}{' '}
-                          {booking.createdAt.getHours() > 12 ? 'PM' : 'AM'}
-                        </p>
-                        <p className="text-sm">
-                          Domain <br />
-                          {booking.Customer?.Domain?.name}
-                        </p>
+                      <div className="flex justify-between w-full p-4">
+                        <div className="text-sm">
+                          <p className="font-semibold mb-1">Created</p>
+                          <p>{formatTime(booking.createdAt)}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(booking.createdAt)}</p>
+                        </div>
+                        <div className="text-sm">
+                          <p className="font-semibold mb-1">Domain</p>
+                          <p>{booking.Customer?.Domain?.name}</p>
+                        </div>
                       </div>
                       <Separator orientation="horizontal" />
-                      <div className="w-full flex items-center p-3 gap-2">
-                        <Avatar>
-                          <AvatarFallback>{booking.email[0]}</AvatarFallback>
+                      <div className="w-full flex items-center p-4 gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>{booking.email[0].toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <p className="text-sm">{booking.email}</p>
+                        <div>
+                          <p className="font-medium">{booking.email}</p>
+                          <p className="text-xs text-muted-foreground">Customer ID: {booking.id.substring(0, 8)}</p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

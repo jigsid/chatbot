@@ -13,20 +13,28 @@ export const extractUUIDFromString = (url: string) => {
   )
 }
 
-export const pusherServer = new PusherServer({
-  appId: process.env.NEXT_PUBLIC_PUSHER_APP_ID as string,
-  key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY as string,
-  secret: process.env.NEXT_PUBLIC_PUSHER_APP_SECRET as string,
-  cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTOR as string,
-  useTLS: true,
-})
+// Only initialize Pusher if all required environment variables are available
+const pusherAppId = process.env.NEXT_PUBLIC_PUSHER_APP_ID;
+const pusherAppKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY;
+const pusherAppSecret = process.env.NEXT_PUBLIC_PUSHER_APP_SECRET;
+const pusherAppCluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER || 'eu';
 
-export const pusherClient = new PusherClient(
-  process.env.NEXT_PUBLIC_PUSHER_APP_KEY as string,
-  {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTOR as string,
-  }
-)
+export const pusherServer = pusherAppId && pusherAppKey && pusherAppSecret && pusherAppCluster
+  ? new PusherServer({
+      appId: pusherAppId,
+      key: pusherAppKey,
+      secret: pusherAppSecret,
+      cluster: pusherAppCluster,
+      useTLS: true,
+    })
+  : null;
+
+export const pusherClient = typeof window !== 'undefined' && pusherAppKey && pusherAppCluster
+  ? new PusherClient(pusherAppKey, {
+      cluster: pusherAppCluster,
+      enabledTransports: ['ws', 'wss'],
+    })
+  : null;
 
 export const postToParent = (message: string) => {
   window.parent.postMessage(message, '*')
@@ -64,4 +72,27 @@ export const getMonthName = (month: number) => {
     : month == 11
     ? 'Nov'
     : month == 12 && 'Dec'
+}
+
+// Format date to Month DD, YYYY
+export const formatDate = (date: Date) => {
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  })
+}
+
+// Format time to HH:MM AM/PM
+export const formatTime = (date: Date) => {
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  })
+}
+
+// Format date and time together
+export const formatDateTime = (date: Date) => {
+  return `${formatDate(date)} at ${formatTime(date)}`
 }

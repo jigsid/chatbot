@@ -1,6 +1,6 @@
 'use client'
 import { useChatWindow } from '@/hooks/conversation/use-conversation'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Loader } from '../loader'
 import Bubble from '../chatbot/bubble'
 import { Input } from '../ui/input'
@@ -29,9 +29,16 @@ const Messenger = (props: Props) => {
   // Check if this chat is from the embedded chatbot
   const isEmbeddedChat = chatRoom?.id?.startsWith('embedded-') || false;
 
+  // Ensure messageWindowRef scrolls to bottom when chats change
+  useEffect(() => {
+    if (messageWindowRef.current) {
+      messageWindowRef.current.scrollTop = messageWindowRef.current.scrollHeight;
+    }
+  }, [chats, messageWindowRef]);
+
   return (
     <div className="flex-1 flex flex-col h-0 relative">
-      {chatRoom && (
+      {chatRoom?.id && (
         <div className="bg-muted py-2 px-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquareIcon className="h-4 w-4 text-muted-foreground" />
@@ -54,10 +61,10 @@ const Messenger = (props: Props) => {
             ref={messageWindowRef}
             className="w-full flex-1 h-0 flex flex-col gap-3 pl-5 py-5 pb-16 chat-window overflow-y-auto"
           >
-            {chatRoom ? (
-              chats.length ? (
+            {chatRoom?.id ? (
+              chats && chats.length ? (
                 chats.map((chat) => (
-                  <div key={chat.id} className="relative">
+                  <div key={chat.id || `msg-${Date.now()}`} className="relative">
                     <Bubble
                       message={{
                         role: chat.role || 'user',
@@ -65,7 +72,7 @@ const Messenger = (props: Props) => {
                       }}
                       createdAt={chat.createdAt}
                     />
-                    {chat.role === 'user' && (
+                    {chat.role === 'user' && chat.id && (
                       <ReadReceipt status={readStatus[chat.id]} />
                     )}
                   </div>
@@ -93,29 +100,29 @@ const Messenger = (props: Props) => {
         <div className="flex justify-between items-center">
           <Input
             {...register('content')}
-            placeholder={chatRoom ? "Type your message..." : "Select a chat to start messaging"}
+            placeholder={chatRoom?.id ? "Type your message..." : "Select a chat to start messaging"}
             className="focus-visible:ring-0 flex-1 p-0 focus-visible:ring-offset-0 bg-muted rounded-none outline-none border-none"
-            disabled={!chatRoom}
+            disabled={!chatRoom?.id}
           />
-          <label className={`cursor-pointer mx-2 ${!chatRoom ? 'opacity-50' : ''}`}>
+          <label className={`cursor-pointer mx-2 ${!chatRoom?.id ? 'opacity-50' : ''}`}>
             <input
               type="file"
               className="hidden"
               onChange={onFileUpload}
               accept="image/*,.pdf,.doc,.docx"
-              disabled={!chatRoom}
+              disabled={!chatRoom?.id}
             />
-            <PaperclipIcon className={`text-muted-foreground ${chatRoom ? 'hover:text-foreground' : ''} transition-colors`} />
+            <PaperclipIcon className={`text-muted-foreground ${chatRoom?.id ? 'hover:text-foreground' : ''} transition-colors`} />
           </label>
           <Button
             type="submit"
             className="mt-3 px-7"
-            disabled={!chatRoom}
+            disabled={!chatRoom?.id}
           >
             Send
           </Button>
         </div>
-        {chatRoom && isEmbeddedChat && (
+        {chatRoom?.id && isEmbeddedChat && (
           <div className="mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <MessageSquareShare className="h-3 w-3" />
