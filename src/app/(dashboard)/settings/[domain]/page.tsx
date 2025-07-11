@@ -91,8 +91,8 @@ const DomainSettingsPage = async ({ params }: Props) => {
                   className="flex items-center gap-2 bg-orange px-3 py-1.5 text-black font-semibold rounded-lg text-sm"
                   trigger={
                     <>
-                      <Plus size={16} className="text-white" />
-                      <p className="text-white">Add Product</p>
+                      <Plus size={16} className="text-black" />
+                      <p className="text-black">Add Product</p>
                     </>
                   }
                 >
