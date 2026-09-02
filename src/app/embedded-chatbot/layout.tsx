@@ -4,13 +4,8 @@ export default function EmbeddedChatbotLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
+    <div className="h-screen overflow-hidden bg-white text-slate-900">
+      {children}
+    </div>
   )
 }
-
-export const metadata = {
-  title: 'SmartRep AI Embedded Chatbot',
-  description: 'Embedded chatbot interface for SmartRep AI',
-} 

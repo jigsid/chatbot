@@ -17,13 +17,17 @@ const ChatbotIframe = () => {
     iframeStyles(`
       .chat-frame {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 16px;
+        right: 16px;
         border: none;
-        z-index: 999;
-        max-width: 350px;
-        max-height: 646px;
-        border-radius: 10px;
+        z-index: 9999;
+        width: 72px;
+        height: 72px;
+        max-width: min(400px, calc(100vw - 24px));
+        max-height: min(640px, calc(100vh - 24px));
+        border-radius: 16px;
+        overflow: hidden;
+        background: transparent;
       }
     `);
 

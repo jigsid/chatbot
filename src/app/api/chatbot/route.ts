@@ -33,11 +33,47 @@ export async function POST(req: NextRequest) {
   try {
     const { id, message, author, chat } = await req.json();
     
-    if (!id || !message) {
+    if (!message) {
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 }
       );
+    }
+
+    const previewMode = !process.env.DATABASE_URL || !id || id === 'preview';
+
+    if (previewMode) {
+      const appointmentResponse = generateAppointmentResponse(message);
+      if (appointmentResponse) {
+        return NextResponse.json({
+          response: {
+            role: 'assistant',
+            content: appointmentResponse,
+          },
+        });
+      }
+
+      try {
+        const model = getGeminiModel();
+        const result = await model.generateContent(
+          `You are a helpful website chat assistant named SmartRep AI. Reply briefly and clearly.\n\nUser: ${message}`
+        );
+        const text = result.response.text();
+        if (text) {
+          return NextResponse.json({
+            response: { role: 'assistant', content: text },
+          });
+        }
+      } catch (error) {
+        console.error('Preview Gemini reply failed:', error);
+      }
+
+      return NextResponse.json({
+        response: {
+          role: 'assistant',
+          content: getFallbackResponse(),
+        },
+      });
     }
 
     // Get chatbot domain information

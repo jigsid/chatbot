@@ -1,16 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { User, Send } from 'lucide-react'
-import { onStoreConversations } from '@/actions/bot'
+import { Send, Lock } from 'lucide-react'
 import { pusherClient } from '@/lib/utils'
 import VoiceAssistant from '@/components/chatbotIframe/voice-assistant'
-
-// Replace this with your actual Vapi API key
-const VAPI_API_KEY = "089ed132-b99b-4d1f-a61f-a99270f0a723"
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function EmbeddedChatbot() {
   const [email, setEmail] = useState('')
@@ -19,55 +13,48 @@ export default function EmbeddedChatbot() {
   const [messages, setMessages] = useState<any[]>([
     {
       role: 'assistant',
-      content: 'Hello! How can I help you today?'
-    }
+      content: 'Hello! How can I help you today?',
+    },
   ])
   const [chatRoomId, setChatRoomId] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
-  // Scroll to bottom whenever messages change
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
-  
-  // Listen for messages from parent window
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Make sure message is from parent
-      if (event.origin !== window.location.origin) return
-      
-      if (event.data.type === 'INIT_CHAT') {
-        if (event.data.email) {
-          setEmail(event.data.email)
-          setEmailSubmitted(true)
-          initializeChat(event.data.email)
-        }
+      if (event.data?.type === 'INIT_CHAT' && event.data.email) {
+        setEmail(event.data.email)
+        setEmailSubmitted(true)
+        initializeChat(event.data.email)
       }
     }
-    
+
     window.addEventListener('message', handleMessage)
-    
-    return () => {
-      window.removeEventListener('message', handleMessage)
-    }
+    return () => window.removeEventListener('message', handleMessage)
   }, [])
-  
-  // Set up Pusher subscription when chatRoomId is available
+
   useEffect(() => {
     if (!chatRoomId || !pusherClient) return
-    
+
     try {
       const channel = pusherClient.subscribe(chatRoomId)
-      
       channel.bind('message', (data: any) => {
         if (data.message.role === 'assistant') {
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: data.message.message
-          }])
+          setSending(false)
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: data.message.message,
+            },
+          ])
         }
       })
-      
+
       return () => {
         pusherClient.unsubscribe(chatRoomId)
       }
@@ -75,35 +62,36 @@ export default function EmbeddedChatbot() {
       console.error('Error setting up Pusher subscription:', error)
     }
   }, [chatRoomId])
-  
+
   const initializeChat = async (userEmail: string) => {
     try {
-      // Notify parent that chat is initialized
-      window.parent.postMessage({
-        type: 'CHAT_INITIALIZED',
-        email: userEmail
-      }, '*')
-      
-      // Create a new chat room or get existing one
+      window.parent.postMessage(
+        {
+          type: 'CHAT_INITIALIZED',
+          email: userEmail,
+        },
+        '*'
+      )
+
       const response = await fetch('/api/external-chatbot-webhook', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           email: userEmail,
           message: 'Chat session started',
-          role: 'system'
-        })
+          role: 'system',
+        }),
       })
-      
+
       const data = await response.json()
       setChatRoomId(data.chatRoomId)
     } catch (error) {
       console.error('Failed to initialize chat:', error)
     }
   }
-  
+
   const handleSubmitEmail = (e: React.FormEvent) => {
     e.preventDefault()
     if (email.trim()) {
@@ -111,106 +99,124 @@ export default function EmbeddedChatbot() {
       initializeChat(email)
     }
   }
-  
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!message.trim() || !chatRoomId) return
-    
-    // Add user message to chat
-    const userMessage = {
-      role: 'user',
-      content: message
-    }
-    
-    setMessages(prev => [...prev, userMessage])
+
+  const sendUserMessage = async (content: string) => {
+    if (!content.trim() || !chatRoomId) return
+
+    setMessages((prev) => [...prev, { role: 'user', content }])
     setMessage('')
-    
+    setSending(true)
+
     try {
-      // Send message to the backend
       const response = await fetch('/api/external-chatbot-webhook', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           email,
-          message: userMessage.content,
+          message: content,
           role: 'user',
-          chatRoomId
-        })
+          chatRoomId,
+        }),
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to send message')
       }
-      
-      // The assistant's response will come through Pusher
+
+      const data = await response.json()
+      if (data.reply?.message) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: data.reply.message },
+        ])
+        setSending(false)
+      }
     } catch (error) {
       console.error('Error sending message:', error)
+      setSending(false)
     }
   }
-  
-  // Handle voice message from the voice assistant
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await sendUserMessage(message)
+  }
+
   const handleVoiceMessage = (voiceMessage: string) => {
     if (voiceMessage.trim() && chatRoomId) {
-      // Set the message in the input field
-      setMessage(voiceMessage)
-      
-      // Send the message
-      const userMessage = {
-        role: 'user',
-        content: voiceMessage
-      }
-      
-      setMessages(prev => [...prev, userMessage])
-      setMessage('')
-      
-      // Send message to the backend
-      fetch('/api/external-chatbot-webhook', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          message: userMessage.content,
-          role: 'user',
-          chatRoomId
-        })
-      }).catch(error => {
-        console.error('Error sending voice message:', error)
-      })
+      sendUserMessage(voiceMessage)
     }
   }
-  
+
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-[#F4F5F7] text-slate-900">
+      <AnimatePresence mode="wait">
       {!emailSubmitted ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-4">
-          <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4 text-center">Enter your email to start chatting</h2>
-            <form onSubmit={handleSubmitEmail} className="space-y-4">
-              <Input
+        <motion.div
+          key="gate"
+          className="flex-1 flex flex-col"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="px-5 pt-5 pb-6 text-white bg-[#0B1F3A]">
+            <p className="text-[13px] text-white/70">Customer Support</p>
+            <h2 className="text-[22px] font-semibold tracking-[-0.03em] mt-2 leading-tight">
+              How can we help?
+            </h2>
+            <p className="text-[13px] text-white/70 mt-2">
+              Start a conversation. We typically reply in a few minutes.
+            </p>
+          </div>
+          <div className="flex-1 p-5">
+            <form onSubmit={handleSubmitEmail} className="space-y-3">
+              <label className="block text-[12px] font-medium text-slate-600">
+                Work email
+              </label>
+              <input
                 type="email"
-                placeholder="your@email.com"
+                placeholder="nina.v@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="w-full h-11 rounded-lg border border-slate-200 bg-white px-3 text-[14px] outline-none focus:border-slate-400"
               />
-              <Button type="submit" className="w-full">
-                Start Chat
-              </Button>
+              <button
+                type="submit"
+                className="w-full h-11 rounded-lg bg-[#0B1F3A] text-white text-[14px] font-medium hover:bg-[#132a4a]"
+              >
+                Continue
+              </button>
+              <p className="flex items-center justify-center gap-1 text-[11px] text-slate-400 pt-2">
+                <Lock className="h-3 w-3" />
+                Your conversation is private
+              </p>
             </form>
           </div>
-        </div>
+        </motion.div>
       ) : (
-        <div className="flex-1 flex flex-col">
-          <div className="bg-primary text-white p-3 text-center font-medium">
-            SmartRep AI Chat
+        <motion.div
+          key="chat"
+          className="flex-1 flex flex-col min-h-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="px-5 py-4 text-white bg-[#0B1F3A] flex items-center gap-3">
+            <div className="relative h-11 w-11 rounded-full bg-white/15 flex items-center justify-center text-[15px] font-medium">
+              S
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-[#22C55E] shadow-[0_0_0_2px_#0B1F3A]" />
+            </div>
+            <div>
+              <p className="text-[15px] font-medium leading-none">Support</p>
+              <p className="text-[12px] text-white/70 mt-1.5">
+                Online · Typically replies in a few minutes
+              </p>
+            </div>
           </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -219,54 +225,58 @@ export default function EmbeddedChatbot() {
                 }`}
               >
                 <div
-                  className={`flex items-start gap-2 max-w-[80%] ${
-                    msg.role === 'assistant' ? 'flex-row' : 'flex-row-reverse'
+                  className={`max-w-[88%] px-3.5 py-2.5 text-[14px] leading-[1.45] ${
+                    msg.role === 'assistant'
+                      ? 'bg-white text-slate-800 rounded-[16px] rounded-bl-md border border-slate-200/80'
+                      : 'bg-[#0B1F3A] text-white rounded-[16px] rounded-br-md'
                   }`}
                 >
-                  {msg.role === 'assistant' ? (
-                    <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0">
-                      AI
-                    </div>
-                  ) : (
-                    <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarFallback>
-                        <User className="w-4 h-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div
-                    className={`p-3 rounded-lg ${
-                      msg.role === 'assistant'
-                        ? 'bg-white border border-gray-200'
-                        : 'bg-primary text-white'
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
+                  {msg.content}
                 </div>
               </div>
             ))}
+            {sending && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-slate-200/80 rounded-[16px] rounded-bl-md px-3.5 py-3">
+                  <div className="flex items-center gap-[5px]">
+                    <span className="widget-dot !bg-slate-400 !w-[5px] !h-[5px]" />
+                    <span className="widget-dot !bg-slate-400 !w-[5px] !h-[5px]" style={{ animationDelay: '160ms' }} />
+                    <span className="widget-dot !bg-slate-400 !w-[5px] !h-[5px]" style={{ animationDelay: '320ms' }} />
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
-          
-          <form onSubmit={handleSendMessage} className="p-3 border-t bg-white">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Type your message..."
+
+          <form
+            onSubmit={handleSendMessage}
+            className="bg-white border-t border-slate-200/80 px-3 pt-2.5 pb-2"
+          >
+            <div className="flex items-end gap-1">
+              <input
+                placeholder="Write a reply…"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="flex-1"
+                className="flex-1 min-w-0 bg-transparent text-[14px] leading-6 py-2.5 px-2 outline-none placeholder:text-slate-400"
               />
-              <Button type="submit" size="icon">
-                <Send className="h-4 w-4" />
-              </Button>
-              
-              {/* Voice Assistant */}
               <VoiceAssistant onMessage={handleVoiceMessage} />
+              <button
+                type="submit"
+                disabled={!message.trim() || !chatRoomId}
+                className="h-10 w-10 rounded-lg bg-[#0B1F3A] text-white flex items-center justify-center disabled:opacity-40"
+              >
+                <Send className="h-4 w-4" />
+              </button>
             </div>
+            <p className="flex items-center justify-center gap-1 pt-1 text-[10px] text-slate-400">
+              <Lock className="h-2.5 w-2.5" />
+              Your conversation is private
+            </p>
           </form>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   )
-} 
+}

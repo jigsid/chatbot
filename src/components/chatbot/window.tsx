@@ -2,58 +2,13 @@
 import { ChatBotMessageProps } from '@/schemas/conversation.schema'
 import React, { forwardRef } from 'react'
 import { UseFormRegister } from 'react-hook-form'
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import RealTimeMode from './real-time'
-import Image from 'next/image'
-import TabsMenu from '../tabs/intex'
-import { BOT_TABS_MENU } from '@/constants/menu'
-import ChatIcon from '@/icons/chat-icon'
-import { TabsContent } from '../ui/tabs'
-import { Separator } from '../ui/separator'
 import Bubble from './bubble'
 import { Responding } from './responding'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
-import { Paperclip, Send, Mic, MicOff } from 'lucide-react'
-import { Label } from '../ui/label'
-import { CardDescription, CardTitle } from '../ui/card'
+import { Paperclip, Send, X, ChevronLeft, Lock } from 'lucide-react'
 import Accordion from '../accordian'
-import UploadButton from '../upload-button'
-import { Badge } from '../ui/badge'
-import Avatar3D from './avatar-3d'
-import ContextualActions from './contextual-actions'
-import { onAiChatBotAssistant } from '@/actions/bot'
 import VoiceAssistant from './voice-assistant'
-
-// Add SpeechRecognition types
-interface SpeechRecognitionEvent extends Event {
-  resultIndex: number;
-  results: {
-    [index: number]: {
-      [index: number]: {
-        transcript: string;
-      };
-    };
-  };
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  onresult: (event: SpeechRecognitionEvent) => void;
-  onend: () => void;
-  start: () => void;
-  stop: () => void;
-}
-
-interface SpeechRecognitionConstructor {
-  new (): SpeechRecognition;
-}
-
-interface WindowWithSpeechRecognition extends Window {
-  SpeechRecognition?: SpeechRecognitionConstructor;
-  webkitSpeechRecognition?: SpeechRecognitionConstructor;
-}
+import Image from 'next/image'
 
 type Props = {
   errors: any
@@ -86,6 +41,20 @@ type Props = {
       }[]
     >
   >
+  onClose?: () => void
+  botIcon?: string | null
+}
+
+const brandName = (domainName?: string) => {
+  if (!domainName) return 'Support'
+  return domainName.replace(/\.(com|io|ai|net|org|co)$/i, '')
+}
+
+const greeting = () => {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
 }
 
 export const BotWindow = forwardRef<HTMLDivElement, Props>(
@@ -100,246 +69,245 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
       helpdesk,
       realtimeMode,
       setChat,
-      textColor,
       theme,
       help,
+      onClose,
+      botIcon,
     },
     ref
   ) => {
-    console.log(errors)
-    const [isListening, setIsListening] = React.useState(false);
-    const [transcript, setTranscript] = React.useState('');
-    const [avatarMood, setAvatarMood] = React.useState<'happy' | 'neutral' | 'thinking'>('neutral');
-    const formRef = React.useRef<HTMLFormElement>(null);
-    
-    // Update avatar mood based on conversation context
-    React.useEffect(() => {
-      if (onResponding) {
-        setAvatarMood('thinking');
-      } else if (chats.length > 0) {
-        const lastMessage = chats[chats.length - 1];
-        
-        if (lastMessage.role === 'assistant') {
-          // Check for positive sentiment in bot response
-          if (lastMessage.content.toLowerCase().includes('great') || 
-              lastMessage.content.toLowerCase().includes('happy') ||
-              lastMessage.content.toLowerCase().includes('thank')) {
-            setAvatarMood('happy');
-          } else {
-            setAvatarMood('neutral');
-          }
-        }
-      }
-    }, [chats, onResponding]);
-    
-    // Handle voice assistant message
+    const formRef = React.useRef<HTMLFormElement>(null)
+    const [view, setView] = React.useState<'chat' | 'help'>('chat')
+    const accent = theme || '#0B1F3A'
+    const showHelp = Boolean(help && helpdesk?.length)
+    const name = brandName(domainName)
+    const showIntro = chats.length <= 1 && !onResponding
+
     const handleVoiceMessage = (message: string) => {
-      // Set the input value to the transcript
-      const inputElement = document.querySelector('input[name="content"]') as HTMLInputElement;
+      const inputElement = document.querySelector(
+        'input[name="content"]'
+      ) as HTMLInputElement
       if (inputElement && message.trim()) {
-        inputElement.value = message;
-        // Submit the form to send the message
+        const setter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          'value'
+        )?.set
+        setter?.call(inputElement, message)
+        inputElement.dispatchEvent(new Event('input', { bubbles: true }))
         if (formRef.current) {
-          const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
-          formRef.current.dispatchEvent(submitEvent);
+          formRef.current.requestSubmit()
         }
       }
-    };
-    
+    }
+
+    const fillQuestion = (question: string) => {
+      setView('chat')
+      const inputElement = document.querySelector(
+        'input[name="content"]'
+      ) as HTMLInputElement
+      if (!inputElement) return
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        'value'
+      )?.set
+      setter?.call(inputElement, question)
+      inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+      inputElement.focus()
+    }
+
     return (
-      <>
-        {/* Add style tag for blue theme */}
-        <style jsx global>{`
-          /* Blue theme for chatbot */
-          .chatbot-window input,
-          .chatbot-window textarea {
-            color: #1e40af !important;
-            border-color: #dbeafe !important;
-          }
-          
-          .chatbot-window input::placeholder {
-            color: #60a5fa !important;
-          }
-          
-          .chatbot-window input:focus {
-            border-color: #3b82f6 !important;
-            box-shadow: 0 0 0 1px #3b82f6 !important;
-          }
-          
-          .chatbot-window .ui-accordion-trigger {
-            color: #1e40af !important;
-          }
-          
-          .chatbot-window .ui-accordion-content {
-            color: #3730a3 !important;
-          }
-
-          .blue-button {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-            border: none !important;
-            color: white !important;
-            transition: all 0.2s ease !important;
-          }
-
-          .blue-button:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
-          }
-
-          .blue-button:active {
-            transform: translateY(0) !important;
-          }
-
-          .blue-input {
-            background: #f8fafc !important;
-            border: 1.5px solid #e2e8f0 !important;
-            transition: all 0.2s ease !important;
-          }
-
-          .blue-input:focus {
-            background: white !important;
-            border-color: #3b82f6 !important;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-          }
-        `}</style>
-        
-        <div className="chatbot-window h-[450px] w-[350px] flex flex-col bg-white rounded-xl border-[1px] border-blue-200 overflow-hidden shadow-lg animate-in slide-in-from-bottom-3 duration-300 fixed bottom-16 right-4">
-          <div className="flex justify-between items-center px-6 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
-            <div className="flex gap-3">
-              <Avatar3D isActive={true} mood={avatarMood} />
-              <div className="flex items-start flex-col justify-center">
-                <h3 className="text-sm font-semibold leading-none text-blue-800">
-                  Sales Rep - SmartRep AI
-                </h3>
-                <p className="text-[11px] text-blue-600 mt-0.5">{domainName.split('.com')[0]}</p>
-                {realtimeMode?.mode && (
-                  <RealTimeMode
-                    setChats={setChat}
-                    chatRoomId={realtimeMode.chatroom}
+      <div className="chatbot-window h-full w-full flex flex-col bg-[#F4F5F7] overflow-hidden rounded-[20px] border border-black/[0.06] shadow-[0_20px_50px_rgba(11,31,58,0.18)]">
+        <header
+          className="shrink-0 px-5 pt-4 pb-4 text-white"
+          style={{ backgroundColor: accent }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative h-11 w-11 shrink-0">
+                {botIcon ? (
+                  <Image
+                    src={`https://ucarecdn.com/${botIcon}/`}
+                    alt=""
+                    fill
+                    className="rounded-full object-cover"
                   />
+                ) : (
+                  <div className="h-11 w-11 rounded-full bg-white/15 flex items-center justify-center text-[15px] font-medium tracking-wide">
+                    {name.slice(0, 1).toUpperCase()}
+                  </div>
                 )}
+                <span
+                  className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-[#22C55E]"
+                  style={{ boxShadow: `0 0 0 2px ${accent}` }}
+                />
               </div>
-            </div>
-            <div className="relative w-9 h-9">
-              <Image
-                src="https://ucarecdn.com/019dd17d-b69b-4dea-a16b-60e0f25de1e9/propuser.png"
-                fill
-                alt="users"
-                objectFit="contain"
-              />
-            </div>
-          </div>
-          <TabsMenu
-            triggers={BOT_TABS_MENU}
-            className="bg-transparent border-b border-blue-100 px-6 pt-1"
-          >
-            <TabsContent value="chat" className="px-0">
-              <div className="flex flex-col h-full">
-                <div
-                  className="px-6 flex h-[250px] flex-col py-3 gap-2 chat-window overflow-y-auto bg-white"
-                  ref={ref}
-                >
-                  {chats.map((chat, key) => (
-                    <Bubble
-                      key={key}
-                      message={chat}
+              <div className="min-w-0">
+                <p className="text-[15px] font-medium leading-none tracking-[-0.01em]">
+                  {name} Support
+                </p>
+                <p className="mt-1.5 text-[12px] text-white/70 leading-none">
+                  {realtimeMode?.mode ? (
+                    <RealTimeMode
+                      setChats={setChat}
+                      chatRoomId={realtimeMode.chatroom}
                     />
-                  ))}
-                  {onResponding && <Responding />}
-                  
-                  {/* Contextual Actions */}
-                  {!onResponding && chats.length > 1 && (
-                    <ContextualActions messages={chats} />
+                  ) : (
+                    'Online · Typically replies in a few minutes'
                   )}
-                </div>
-                <Separator className="bg-blue-100" />
-                
-                {/* Fixed Bottom Input Section with Blue Theme */}
-                <div className="p-3 bg-gradient-to-r from-blue-50 to-white border-t border-blue-100">
-                  <form
-                    ref={formRef}
-                    onSubmit={onChat}
-                    className="flex flex-col gap-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          {...register('content')}
-                          placeholder="Type your message..."
-                          className="blue-input pr-10 py-2.5 text-sm rounded-lg focus:outline-none"
-                        />
-                        <Label
-                          htmlFor="file"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer hover:bg-blue-50 p-1 rounded transition-colors"
-                        >
-                          <Paperclip className="w-4 h-4 text-blue-500 hover:text-blue-600" />
-                        </Label>
-                        <input
-                          type="file"
-                          id="file"
-                          className="hidden"
-                          {...register('image')}
-                        />
-                      </div>
-                      
-                      {/* Send Button */}
-                      <Button
-                        type="submit"
-                        size="icon"
-                        className="blue-button rounded-full h-9 w-9 flex-shrink-0"
-                      >
-                        <Send className="w-4 h-4" />
-                      </Button>
-                      
-                      {/* Voice Assistant Button */}
-                      <div className="flex-shrink-0">
-                        <VoiceAssistant
-                          onMessage={handleVoiceMessage}
-                          chatRoomId={realtimeMode?.chatroom}
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Error Message */}
-                    {errors.content && (
-                      <p className="text-xs text-red-500 px-1">
-                        {errors.content.message}
-                      </p>
-                    )}
-                  </form>
-                </div>
+                </p>
               </div>
-            </TabsContent>
-
-            <TabsContent value="help desk" className="px-0">
-              <div className="h-[290px] overflow-y-auto overflow-x-hidden px-6 py-3 flex flex-col gap-2.5">
-                <div>
-                  <CardTitle className="text-sm text-blue-800">Help Desk</CardTitle>
-                  <CardDescription className="text-[10px] text-blue-600">
-                    Browse from a list of questions people usually ask.
-                  </CardDescription>
-                </div>
-                <Separator orientation="horizontal" className="bg-blue-100" />
-
-                {helpdesk.map((desk) => (
-                  <Accordion
-                    key={desk.id}
-                    trigger={desk.question}
-                    content={desk.answer}
-                    className="text-blue-800"
-                  />
-                ))}
-              </div>
-            </TabsContent>
-          </TabsMenu>
-          
-          {/* Footer */}
-          <div className="flex justify-center py-1.5 bg-blue-50 border-t border-blue-200">
-            <p className="text-blue-400 text-[10px]">Powered By SmartRep AI</p>
+            </div>
+            <div className="flex items-center gap-1">
+              {showHelp && (
+                <button
+                  type="button"
+                  onClick={() => setView(view === 'help' ? 'chat' : 'help')}
+                  className="h-8 px-2.5 rounded-md text-[12px] font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  {view === 'help' ? 'Chat' : 'Help'}
+                </button>
+              )}
+              {onClose && (
+                <button
+                  type="button"
+                  aria-label="Close chat"
+                  onClick={onClose}
+                  className="h-8 w-8 rounded-md flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </>
+        </header>
+
+        {view === 'help' ? (
+          <div className="flex-1 min-h-0 overflow-y-auto bg-white px-5 py-5">
+            <button
+              type="button"
+              onClick={() => setView('chat')}
+              className="inline-flex items-center gap-1 text-[12px] text-slate-500 hover:text-slate-800 mb-4"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Back to conversation
+            </button>
+            <p className="text-[13px] font-medium text-slate-900">Help Center</p>
+            <p className="text-[12px] text-slate-500 mt-1 mb-4">
+              Answers to the questions we hear most often.
+            </p>
+            <div className="divide-y divide-slate-100 border-t border-slate-100">
+              {helpdesk.map((desk) => (
+                <Accordion
+                  key={desk.id}
+                  trigger={desk.question}
+                  content={desk.answer}
+                  className="text-slate-800 text-[13px]"
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div
+              className="flex-1 min-h-0 px-4 py-4 flex flex-col gap-3 overflow-y-auto chat-window"
+              ref={ref}
+            >
+              {showIntro && (
+                <div className="pb-2">
+                  <p className="text-[22px] font-semibold tracking-[-0.03em] text-slate-900 leading-tight">
+                    {greeting()}
+                  </p>
+                  <p className="text-[14px] text-slate-500 mt-1.5 leading-snug">
+                    You are chatting with {name} Support. How can we help you today?
+                  </p>
+                </div>
+              )}
+
+              {chats.map((chat, key) => (
+                <Bubble
+                  key={key}
+                  message={chat}
+                  accent={accent}
+                  animate={
+                    chat.role === 'assistant' && key === chats.length - 1
+                  }
+                  showAvatar={
+                    chat.role === 'assistant' &&
+                    (key === 0 || chats[key - 1]?.role !== 'assistant')
+                  }
+                />
+              ))}
+              {onResponding && <Responding />}
+
+              {showIntro && helpdesk?.length > 0 && (
+                <div className="pt-1 space-y-2">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-400">
+                    Suggested
+                  </p>
+                  {helpdesk.slice(0, 3).map((desk) => (
+                    <button
+                      key={desk.id}
+                      type="button"
+                      onClick={() => fillQuestion(desk.question)}
+                      className="w-full text-left bg-white border border-slate-200/80 rounded-xl px-3.5 py-3 text-[13px] text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors"
+                    >
+                      {desk.question}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <form
+              ref={formRef}
+              onSubmit={onChat}
+              className="shrink-0 bg-white border-t border-slate-200/80 px-3 pt-2.5 pb-2"
+            >
+              <div className="flex items-end gap-1">
+                <label
+                  htmlFor="chatbot-file"
+                  className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </label>
+                <input
+                  type="file"
+                  id="chatbot-file"
+                  className="hidden"
+                  {...register('image')}
+                />
+                <input
+                  {...register('content')}
+                  placeholder="Write a reply…"
+                  autoComplete="off"
+                  className="flex-1 min-w-0 bg-transparent text-[14px] leading-6 py-2.5 outline-none placeholder:text-slate-400 text-slate-800"
+                />
+                <VoiceAssistant
+                  onMessage={handleVoiceMessage}
+                  chatRoomId={realtimeMode?.chatroom}
+                />
+                <button
+                  type="submit"
+                  aria-label="Send"
+                  className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center text-white transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: accent }}
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+              {errors.content && (
+                <p className="text-[12px] text-red-600 px-2 pb-1">
+                  {errors.content.message}
+                </p>
+              )}
+              <p className="flex items-center justify-center gap-1 pt-1 pb-0.5 text-[10px] text-slate-400">
+                <Lock className="h-2.5 w-2.5" />
+                Your conversation is private
+              </p>
+            </form>
+          </>
+        )}
+      </div>
     )
   }
 )

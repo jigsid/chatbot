@@ -15,7 +15,6 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onMessage, chatRoomId }
   const {
     isCallActive,
     isMuted,
-    assistantStatus,
     transcript,
     startCall,
     endCall,
@@ -37,7 +36,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onMessage, chatRoomId }
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1 shrink-0">
       {isCallActive ? (
         <>
           <Button
@@ -46,6 +45,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onMessage, chatRoomId }
             className="rounded-full h-8 w-8"
             onClick={endCall}
             title="End call"
+            type="button"
           >
             <PhoneOff className="h-4 w-4" />
           </Button>
@@ -55,20 +55,19 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onMessage, chatRoomId }
             className="rounded-full h-8 w-8"
             onClick={toggleMute}
             title={isMuted ? "Unmute" : "Mute"}
+            type="button"
           >
             {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
           </Button>
-          <div className="text-xs text-gray-500">
-            {assistantStatus === 'speaking' ? 'Assistant is speaking...' : 'Assistant is listening...'}
-          </div>
         </>
       ) : (
         <Button
-          variant="secondary"
+          variant="ghost"
           size="icon"
-          className="rounded-full h-8 w-8"
+          className="rounded-lg h-10 w-10 text-slate-400 hover:text-slate-600 hover:bg-slate-50"
           onClick={handleStartCall}
           title="Start voice call"
+          type="button"
         >
           <Phone className="h-4 w-4" />
         </Button>

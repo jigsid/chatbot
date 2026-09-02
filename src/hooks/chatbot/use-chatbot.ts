@@ -46,7 +46,7 @@ export const useChatBot = () => {
   const messageWindowRef = useRef<HTMLDivElement | null>(null)
   const [botOpened, setBotOpened] = useState<boolean>(false)
   const onOpenChatBot = () => setBotOpened((prev) => !prev)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
   const [onChats, setOnChats] = useState<
     { role: 'assistant' | 'user'; content: string; link?: string }[]
   >([])
@@ -71,39 +71,95 @@ export const useChatBot = () => {
   useEffect(() => {
     postToParent(
       JSON.stringify({
-        width: botOpened ? 550 : 80,
-        height: botOpened ? 800 : 80,
+        width: botOpened ? 400 : 72,
+        height: botOpened ? 640 : 72,
       })
     )
   }, [botOpened])
 
-  let limitRequest = 0
+  const applyPreviewBot = () => {
+    setCurrentBotId((prev) => prev || 'preview')
+    setCurrentBot((prev) =>
+      prev || {
+        name: 'SmartRep AI',
+        chatBot: {
+          id: 'preview',
+          icon: null,
+          welcomeMessage: 'Hi! How can I help you today?',
+          background: '#0B1F3A',
+          textColor: '#0f172a',
+          helpdesk: false,
+        },
+        helpdesk: [],
+      }
+    )
+    setOnChats((prev) =>
+      prev.length
+        ? prev
+        : [
+            {
+              role: 'assistant',
+              content: 'Hi! How can I help you today?',
+            },
+          ]
+    )
+    setLoading(false)
+  }
 
   const onGetDomainChatBot = async (id: string) => {
+    setLoading(true)
     setCurrentBotId(id)
-    const chatbot = await onGetCurrentChatBot(id)
-    if (chatbot) {
-      setOnChats((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: chatbot.chatBot?.welcomeMessage!,
-        },
-      ])
-      setCurrentBot(chatbot)
-      setLoading(false)
+    try {
+      const chatbot = await onGetCurrentChatBot(id)
+      if (chatbot) {
+        setOnChats((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content:
+              chatbot.chatBot?.welcomeMessage || 'Hi! How can I help you today?',
+          },
+        ])
+        setCurrentBot(chatbot)
+        setLoading(false)
+        return
+      }
+    } catch (error) {
+      console.error('Failed to load chatbot', error)
     }
+    applyPreviewBot()
   }
 
   useEffect(() => {
-    window.addEventListener('message', (e) => {
-      console.log(e.data)
-      const botid = e.data
-      if (limitRequest < 1 && typeof botid == 'string') {
+    const isUuid = (value: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        value
+      )
+
+    const handleMessage = (e: MessageEvent) => {
+      const payload = e.data
+      const botid =
+        typeof payload === 'string'
+          ? payload
+          : payload && typeof payload === 'object'
+            ? payload.id || payload.botId
+            : undefined
+
+      if (typeof botid === 'string' && isUuid(botid)) {
         onGetDomainChatBot(botid)
-        limitRequest++
       }
-    })
+    }
+
+    window.addEventListener('message', handleMessage)
+
+    const timeout = window.setTimeout(() => {
+      applyPreviewBot()
+    }, 800)
+
+    return () => {
+      window.removeEventListener('message', handleMessage)
+      window.clearTimeout(timeout)
+    }
   }, [])
 
   const onStartChatting = handleSubmit(async (values) => {
@@ -137,7 +193,7 @@ export const useChatBot = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            id: currentBotId,
+            id: currentBotId || 'preview',
             chat: onChats,
             author: 'user',
             message: uploaded.uuid
@@ -202,7 +258,7 @@ export const useChatBot = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            id: currentBotId,
+            id: currentBotId || 'preview',
             chat: onChats,
             author: 'user',
             message: contentText

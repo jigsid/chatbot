@@ -18,7 +18,7 @@ export default authMiddleware({
     '/blog6',
     '/callback/stripe/success',
   ],
-  ignoredRoutes: ['/chatbot'],
+  ignoredRoutes: ['/chatbot', '/embedded-chatbot'],
   afterAuth: (auth, req, evt) => {
     const { userId } = auth;
     if (!userId && req.nextUrl.pathname === '/dashboard') {

@@ -31,6 +31,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({
+        success: true,
+        chatRoomId: chatRoomId || 'preview-room',
+        preview: true,
+        reply:
+          role === 'user'
+            ? {
+                role: 'assistant',
+                message:
+                  "Thanks for your message. I'm here to help with appointments, products, and questions.",
+              }
+            : undefined,
+      });
+    }
+
     // If chatRoomId is provided, use it directly (for embedded chatbot)
     if (chatRoomId) {
       // Verify the chatroom exists and belongs to this user
