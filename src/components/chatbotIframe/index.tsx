@@ -21,35 +21,35 @@ const ChatbotIframe = () => {
         right: 16px;
         border: none;
         z-index: 9999;
-        width: 72px;
-        height: 72px;
+        width: 80px;
+        height: 80px;
         max-width: min(400px, calc(100vw - 24px));
-        max-height: min(640px, calc(100vh - 24px));
-        border-radius: 16px;
-        overflow: hidden;
+        max-height: min(680px, calc(100vh - 24px));
+        border-radius: 20px;
         background: transparent;
       }
     `);
 
     iframe.src = "https://chatbot-jigsid.vercel.app/chatbot";
     iframe.classList.add('chat-frame');
+    iframe.setAttribute('allow', 'microphone');
     document.body.appendChild(iframe);
 
     const handleMessage = (e: MessageEvent) => {
-      if (e.origin !== "https://chatbot-jigsid.vercel.app") return null;
-      
-      try {
-        const dimensions = JSON.parse(e.data);
-        iframe.style.width = dimensions.width + 'px';
-        iframe.style.height = dimensions.height + 'px';
-      } catch (error) {
-        console.error('Invalid message data:', e.data);
+      if (e.origin.replace(/\/$/, '') !== "https://chatbot-jigsid.vercel.app") return;
+
+      let payload = e.data;
+      if (typeof payload === 'string') {
+        try {
+          payload = JSON.parse(payload);
+        } catch {
+          return;
+        }
       }
-      
-      iframe.contentWindow?.postMessage(
-        "408253b7-57fe-4f3d-a24b-6d401e246055", 
-        "https://chatbot-jigsid.vercel.app"
-      );
+      if (!payload || typeof payload.width !== 'number' || typeof payload.height !== 'number') return;
+
+      iframe.style.width = payload.width + 'px';
+      iframe.style.height = payload.height + 'px';
     };
 
     window.addEventListener("message", handleMessage);

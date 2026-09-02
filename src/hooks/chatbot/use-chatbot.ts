@@ -45,7 +45,36 @@ export const useChatBot = () => {
   >()
   const messageWindowRef = useRef<HTMLDivElement | null>(null)
   const [botOpened, setBotOpened] = useState<boolean>(false)
-  const onOpenChatBot = () => setBotOpened((prev) => !prev)
+  const openTimer = useRef<number | null>(null)
+
+  const postFrameSize = (open: boolean) => {
+    postToParent(
+      JSON.stringify({
+        type: 'SMARTREP_RESIZE',
+        width: open ? 400 : 80,
+        height: open ? 680 : 80,
+      })
+    )
+  }
+
+  const onOpenChatBot = () => {
+    if (openTimer.current) {
+      window.clearTimeout(openTimer.current)
+    }
+
+    if (!botOpened) {
+      postFrameSize(true)
+      openTimer.current = window.setTimeout(() => {
+        setBotOpened(true)
+      }, 40)
+      return
+    }
+
+    setBotOpened(false)
+    openTimer.current = window.setTimeout(() => {
+      postFrameSize(false)
+    }, 220)
+  }
   const [loading, setLoading] = useState<boolean>(false)
   const [onChats, setOnChats] = useState<
     { role: 'assistant' | 'user'; content: string; link?: string }[]
@@ -71,11 +100,20 @@ export const useChatBot = () => {
   useEffect(() => {
     postToParent(
       JSON.stringify({
-        width: botOpened ? 400 : 72,
-        height: botOpened ? 640 : 72,
+        type: 'SMARTREP_RESIZE',
+        width: botOpened ? 400 : 80,
+        height: botOpened ? 680 : 80,
       })
     )
   }, [botOpened])
+
+  useEffect(() => {
+    return () => {
+      if (openTimer.current) {
+        window.clearTimeout(openTimer.current)
+      }
+    }
+  }, [])
 
   const applyPreviewBot = () => {
     setCurrentBotId((prev) => prev || 'preview')
@@ -106,7 +144,11 @@ export const useChatBot = () => {
     setLoading(false)
   }
 
+  const loadedBotId = useRef<string | null>(null)
+
   const onGetDomainChatBot = async (id: string) => {
+    if (loadedBotId.current === id) return
+    loadedBotId.current = id
     setLoading(true)
     setCurrentBotId(id)
     try {

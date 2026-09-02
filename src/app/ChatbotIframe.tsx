@@ -21,29 +21,36 @@ const ChatbotIframe = () => {
         right: 16px;
         border: none;
         z-index: 9999;
-        width: 72px;
-        height: 72px;
+        width: 80px;
+        height: 80px;
         max-width: min(400px, calc(100vw - 24px));
-        max-height: min(640px, calc(100vh - 24px));
-        border-radius: 16px;
-        overflow: hidden;
+        max-height: min(680px, calc(100vh - 24px));
+        border-radius: 20px;
         background: transparent;
       }
     `);
 
     iframe.src = "/chatbot";
     iframe.classList.add('chat-frame');
+    iframe.setAttribute('allow', 'microphone');
     document.body.appendChild(iframe);
 
+    const applySize = (payload: { width?: number; height?: number }) => {
+      if (typeof payload.width !== 'number' || typeof payload.height !== 'number') return;
+      iframe.style.width = payload.width + 'px';
+      iframe.style.height = payload.height + 'px';
+    };
+
     const handleMessage = (e: MessageEvent) => {
-      try {
-        const dimensions = JSON.parse(e.data);
-        iframe.style.width = dimensions.width + 'px';
-        iframe.style.height = dimensions.height + 'px';
-      } catch (error) {
-        console.error('Invalid message data:', e.data);
+      let payload = e.data;
+      if (typeof payload === 'string') {
+        try {
+          payload = JSON.parse(payload);
+        } catch {
+          return;
+        }
       }
-      iframe.contentWindow?.postMessage("408253b7-57fe-4f3d-a24b-6d401e246055", "*");
+      applySize(payload);
     };
 
     window.addEventListener("message", handleMessage);
@@ -60,4 +67,3 @@ const ChatbotIframe = () => {
 };
 
 export default ChatbotIframe;
-  

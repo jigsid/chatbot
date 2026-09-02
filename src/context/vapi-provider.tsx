@@ -39,7 +39,10 @@ export const VapiProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useVapi = (): VapiContextType => {
   const context = useContext(VapiContext)
   if (context === undefined) {
-    throw new Error('useVapi must be used within a VapiProvider')
+    return {
+      config: defaultConfig,
+      updateConfig: () => undefined,
+    }
   }
   return context
 } 

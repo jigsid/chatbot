@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { MessageCircle, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getWidgetPalette } from '@/lib/chatbot-theme'
+import { WidgetErrorBoundary } from './widget-error-boundary'
 
 const spring = { type: 'spring' as const, stiffness: 420, damping: 32, mass: 0.8 }
 
@@ -34,34 +35,36 @@ const AiChatBot = () => {
   const onAccent = palette.onBrand
 
   return (
-    <div className="h-full w-full flex flex-col justify-end items-end gap-3 p-2 pointer-events-none">
+    <div className="relative h-full w-full pointer-events-none">
       <AnimatePresence>
         {botOpened && (
           <motion.div
             key="chat-window"
-            className="pointer-events-auto w-full flex-1 min-h-0 origin-bottom-right"
-            initial={{ opacity: 0, y: 28, scale: 0.92, filter: 'blur(6px)' }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: 18, scale: 0.94, filter: 'blur(4px)' }}
+            className="pointer-events-auto absolute left-2 right-2 top-2 bottom-[4.75rem] origin-bottom-right"
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={spring}
           >
-            <BotWindow
-              errors={errors}
-              setChat={setOnChats}
-              realtimeMode={onRealTime}
-              helpdesk={currentBot?.helpdesk || []}
-              domainName={currentBot?.name || 'Support'}
-              ref={messageWindowRef}
-              help={currentBot?.chatBot?.helpdesk}
-              theme={palette.brand}
-              textColor={currentBot?.chatBot?.textColor}
-              chats={onChats}
-              register={register}
-              onChat={onStartChatting}
-              onResponding={onAiTyping}
-              onClose={onOpenChatBot}
-              botIcon={currentBot?.chatBot?.icon}
-            />
+            <WidgetErrorBoundary>
+              <BotWindow
+                errors={errors}
+                setChat={setOnChats}
+                realtimeMode={onRealTime}
+                helpdesk={currentBot?.helpdesk || []}
+                domainName={currentBot?.name || 'Support'}
+                ref={messageWindowRef}
+                help={currentBot?.chatBot?.helpdesk}
+                theme={palette.brand}
+                textColor={currentBot?.chatBot?.textColor}
+                chats={onChats}
+                register={register}
+                onChat={onStartChatting}
+                onResponding={onAiTyping}
+                onClose={onOpenChatBot}
+                botIcon={currentBot?.chatBot?.icon}
+              />
+            </WidgetErrorBoundary>
           </motion.div>
         )}
       </AnimatePresence>
@@ -72,7 +75,7 @@ const AiChatBot = () => {
         aria-expanded={botOpened}
         onClick={onOpenChatBot}
         className={cn(
-          'pointer-events-auto relative h-14 w-14 rounded-full overflow-hidden',
+          'pointer-events-auto absolute bottom-2 right-2 z-20 h-14 w-14 shrink-0 rounded-full overflow-hidden',
           'flex items-center justify-center',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           loading && 'opacity-80'
@@ -86,24 +89,11 @@ const AiChatBot = () => {
         animate={{
           scale: 1,
           opacity: 1,
-          y: botOpened ? 0 : [0, -3, 0],
         }}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.9 }}
-        transition={{
-          scale: spring,
-          opacity: { duration: 0.25 },
-          y: botOpened
-            ? { duration: 0.2 }
-            : { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
-        }}
+        whileHover={{ scale: 1.06 }}
+        whileTap={{ scale: 0.94 }}
+        transition={spring}
       >
-        {!botOpened && (
-          <span
-            className="absolute inset-[-6px] rounded-full pointer-events-none widget-launcher-glow"
-            style={{ borderColor: accent, color: accent }}
-          />
-        )}
         <AnimatePresence mode="wait" initial={false}>
           {botOpened ? (
             <motion.span
