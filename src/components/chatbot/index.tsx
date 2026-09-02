@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { MessageCircle, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { getWidgetPalette } from '@/lib/chatbot-theme'
 
 const spring = { type: 'spring' as const, stiffness: 420, damping: 32, mass: 0.8 }
 
@@ -25,7 +26,12 @@ const AiChatBot = () => {
     errors,
   } = useChatBot()
 
-  const accent = currentBot?.chatBot?.background || '#0B1F3A'
+  const palette = getWidgetPalette(
+    currentBot?.chatBot?.background,
+    currentBot?.chatBot?.textColor
+  )
+  const accent = palette.brand
+  const onAccent = palette.onBrand
 
   return (
     <div className="h-full w-full flex flex-col justify-end items-end gap-3 p-2 pointer-events-none">
@@ -47,7 +53,7 @@ const AiChatBot = () => {
               domainName={currentBot?.name || 'Support'}
               ref={messageWindowRef}
               help={currentBot?.chatBot?.helpdesk}
-              theme={currentBot?.chatBot?.background}
+              theme={palette.brand}
               textColor={currentBot?.chatBot?.textColor}
               chats={onChats}
               register={register}
@@ -66,14 +72,15 @@ const AiChatBot = () => {
         aria-expanded={botOpened}
         onClick={onOpenChatBot}
         className={cn(
-          'pointer-events-auto relative h-14 w-14 rounded-full text-white overflow-hidden',
+          'pointer-events-auto relative h-14 w-14 rounded-full overflow-hidden',
           'flex items-center justify-center',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           loading && 'opacity-80'
         )}
         style={{
-          background: `linear-gradient(145deg, ${accent} 0%, ${accent}bb 100%)`,
-          boxShadow: `0 12px 28px ${accent}55, inset 0 1px 0 rgba(255,255,255,0.25)`,
+          backgroundColor: accent,
+          color: onAccent,
+          boxShadow: '0 12px 28px rgba(11, 31, 58, 0.28)',
         }}
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{
@@ -93,8 +100,8 @@ const AiChatBot = () => {
       >
         {!botOpened && (
           <span
-            className="absolute inset-[-4px] rounded-full widget-launcher-glow"
-            style={{ borderColor: accent }}
+            className="absolute inset-[-6px] rounded-full pointer-events-none widget-launcher-glow"
+            style={{ borderColor: accent, color: accent }}
           />
         )}
         <AnimatePresence mode="wait" initial={false}>
@@ -107,7 +114,7 @@ const AiChatBot = () => {
               exit={{ rotate: 90, opacity: 0, scale: 0.6 }}
               transition={{ duration: 0.18 }}
             >
-              <X className="h-6 w-6" />
+              <X className="h-6 w-6" color={onAccent} strokeWidth={2} />
             </motion.span>
           ) : currentBot?.chatBot?.icon ? (
             <motion.span
@@ -117,12 +124,15 @@ const AiChatBot = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.7, opacity: 0 }}
             >
-              <Image
-                src={`https://ucarecdn.com/${currentBot.chatBot.icon}/`}
-                alt="Open chat"
-                fill
-                className="rounded-full object-cover p-1"
-              />
+              <span className="absolute inset-[6px] rounded-full bg-white overflow-hidden">
+                <Image
+                  src={`https://ucarecdn.com/${currentBot.chatBot.icon}/`}
+                  alt="Open chat"
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              </span>
             </motion.span>
           ) : (
             <motion.span
@@ -133,7 +143,7 @@ const AiChatBot = () => {
               exit={{ rotate: -90, opacity: 0, scale: 0.6 }}
               transition={{ duration: 0.18 }}
             >
-              <MessageCircle className="h-6 w-6" />
+              <MessageCircle className="h-6 w-6" color={onAccent} strokeWidth={2} />
             </motion.span>
           )}
         </AnimatePresence>

@@ -86,7 +86,7 @@ export default function Home() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="min-h-[95vh] pt-16 flex items-center relative bg-gradient-to-b from-black via-slate-950 to-slate-900 overflow-hidden"
+        className="min-h-screen pt-24 pb-32 flex items-center relative bg-gradient-to-b from-black via-slate-950 to-slate-900 overflow-hidden"
       >
         {/* Modern Glass Morphism Background */}
         <div className="absolute inset-0">
@@ -100,14 +100,14 @@ export default function Home() {
         <div className="absolute inset-0 bg-noise opacity-[0.02] mix-blend-soft-light"></div>
         
         {/* Container */}
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* Text Content - Left Side */}
-            <div className="lg:col-span-6 flex flex-col gap-6">
+            <div className="lg:col-span-6 flex flex-col gap-8">
               {/* Smart Badge */}
               <MotionSpan
                 variants={fadeInDown}
-                className="relative self-start mb-1"
+                className="relative self-start"
               >
                 <div className="relative px-5 py-2 bg-white/5 backdrop-blur-2xl rounded-full text-sm font-medium tracking-wide flex items-center gap-2 border border-white/10 shadow-lg shadow-black/20 hover:border-white/15 transition-all duration-300">
                   <Zap className="w-4 h-4 text-cyan-400" />
@@ -119,10 +119,10 @@ export default function Home() {
               </MotionSpan>
 
               {/* Title */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <MotionH1
                   variants={fadeInUp}
-                  className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight"
+                  className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.15]"
                 >
                   <span className="bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
                     Conversational AI
@@ -130,7 +130,7 @@ export default function Home() {
                 </MotionH1>
                 <MotionH1
                   variants={fadeInUp}
-                  className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight"
+                  className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.15]"
                 >
                   <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
                     For Modern Business
@@ -138,7 +138,7 @@ export default function Home() {
                 </MotionH1>
                 <MotionP
                   variants={fadeInUp}
-                  className="max-w-xl text-lg text-slate-300/90 mt-4 leading-relaxed"
+                  className="max-w-lg text-lg text-slate-300/90 pt-2 leading-relaxed"
                 >
                   Elevate customer support with our AI platform that handles inquiries, 
                   automates responses, and delivers personalized experiences 24/7.
@@ -148,7 +148,7 @@ export default function Home() {
               {/* Key Features Tags */}
               <MotionDiv
                 variants={fadeInUp}
-                className="flex flex-wrap gap-2 mt-2"
+                className="flex flex-wrap gap-2.5"
               >
                 {["Self-Learning", "Multi-modal", "Low-latency", "Enterprise-ready"].map((tag, i) => (
                   <span 
@@ -164,7 +164,7 @@ export default function Home() {
               {/* CTA Buttons */}
               <MotionDiv
                 variants={fadeInUp}
-                className="flex flex-col sm:flex-row gap-4 mt-4"
+                className="flex flex-col sm:flex-row gap-4 pt-1"
               >
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-300"></div>
@@ -189,12 +189,12 @@ export default function Home() {
               </MotionDiv>
 
               {/* Trust Indicators */}
-              <MotionDiv variants={fadeInUp} className="mt-4">
-                <p className="text-sm text-slate-400 mb-3 flex items-center gap-2">
+              <MotionDiv variants={fadeInUp} className="pt-2">
+                <p className="text-sm text-slate-400 mb-4 flex items-center gap-2">
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   Trusted by innovative companies
                 </p>
-                <div className="flex flex-wrap gap-6 items-center">
+                <div className="flex flex-wrap gap-4 sm:gap-5 items-center">
                   <div className="h-8 grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100 group">
                     <div className="h-8 px-3 bg-white/5 backdrop-blur-xl rounded-lg flex items-center gap-2 border border-white/10 hover:border-white/20 transition-all duration-300">
                       <svg className="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -303,7 +303,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
-                  className="absolute -bottom-6 -left-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-3 border border-white/10 shadow-lg backdrop-blur-xl"
+                  className="absolute -bottom-5 -left-6 sm:-left-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-3 border border-white/10 shadow-lg backdrop-blur-xl hidden sm:flex"
                 >
                   <div className="flex items-center gap-3">
                     <Shield className="w-5 h-5 text-cyan-400" />
@@ -315,7 +315,7 @@ export default function Home() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.9, duration: 0.5 }}
-                  className="absolute top-1/2 -right-12 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-3 border border-white/10 shadow-lg backdrop-blur-xl"
+                  className="absolute top-1/2 -right-8 lg:-right-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-3 border border-white/10 shadow-lg backdrop-blur-xl hidden lg:flex"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center text-white">
@@ -337,12 +337,12 @@ export default function Home() {
           {/* Stats Row */}
           <MotionDiv
             variants={fadeInUp}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 mb-8"
+            className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6 mt-20 lg:mt-24 mb-4"
           >
             {stats.map((stat, index) => (
               <div 
                 key={index}
-                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 text-center hover:bg-white/10 transition-all duration-300"
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-6 text-center hover:bg-white/10 transition-all duration-300"
               >
                 <div className="text-xs text-slate-400">{stat.prefix}</div>
                 <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mt-1">
@@ -359,7 +359,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2"
         >
           <Link href="#features" className="group flex flex-col items-center">
               <p className="text-xs font-light text-slate-400 group-hover:text-cyan-300 transition-colors duration-300">
@@ -381,22 +381,6 @@ export default function Home() {
           </Link>
         </MotionDiv>
           
-        {/* Notification Badge */}
-        <MotionDiv
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 2, duration: 0.5 }}
-          className="absolute top-6 right-6 sm:right-10"
-        >
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-full blur opacity-40 animate-pulse"></div>
-            <div className="relative bg-white/10 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping absolute -left-0.5"></div>
-              <div className="w-2 h-2 rounded-full bg-cyan-400 absolute -left-0.5"></div>
-              <span className="text-xs font-medium text-white pl-2">New AI Features Available</span>
-            </div>
-          </div>
-        </MotionDiv>
       </MotionSection>
 
       {/* Section Divider */}

@@ -55,13 +55,8 @@ const EditChatbotIcon = ({ register, errors, chatBot }: Props) => {
           />
         </div>
       ) : (
-        <div
-          className="cursor-pointer shadow-md w-20 h-20 flex items-center justify-center rounded-full bg-grandis"
-          // style={{ backgroundColor: background }}
-        >
-          <BotIcon
-            // textColor={textColor}
-          />
+        <div className="cursor-pointer shadow-md w-20 h-20 flex items-center justify-center rounded-full bg-grandis">
+          <BotIcon />
         </div>
       )}
       <div className="flex flex-col gap-2">

@@ -9,6 +9,7 @@ import { Paperclip, Send, X, ChevronLeft, Lock } from 'lucide-react'
 import Accordion from '../accordian'
 import VoiceAssistant from './voice-assistant'
 import Image from 'next/image'
+import { getWidgetPalette } from '@/lib/chatbot-theme'
 
 type Props = {
   errors: any
@@ -78,7 +79,9 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
   ) => {
     const formRef = React.useRef<HTMLFormElement>(null)
     const [view, setView] = React.useState<'chat' | 'help'>('chat')
-    const accent = theme || '#0B1F3A'
+    const palette = getWidgetPalette(theme, textColor)
+    const accent = palette.brand
+    const onAccent = palette.onBrand
     const showHelp = Boolean(help && helpdesk?.length)
     const name = brandName(domainName)
     const showIntro = chats.length <= 1 && !onResponding
@@ -118,8 +121,8 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
     return (
       <div className="chatbot-window h-full w-full flex flex-col bg-[#F4F5F7] overflow-hidden rounded-[20px] border border-black/[0.06] shadow-[0_20px_50px_rgba(11,31,58,0.18)]">
         <header
-          className="shrink-0 px-5 pt-4 pb-4 text-white"
-          style={{ backgroundColor: accent }}
+          className="shrink-0 px-5 pt-4 pb-4"
+          style={{ backgroundColor: accent, color: onAccent }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -129,6 +132,7 @@ export const BotWindow = forwardRef<HTMLDivElement, Props>(
                     src={`https://ucarecdn.com/${botIcon}/`}
                     alt=""
                     fill
+                    unoptimized
                     className="rounded-full object-cover"
                   />
                 ) : (

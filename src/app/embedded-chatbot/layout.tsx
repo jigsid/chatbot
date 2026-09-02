@@ -1,3 +1,5 @@
+import ChatbotThemeLock from '@/app/chatbot/theme-lock'
+
 export default function EmbeddedChatbotLayout({
   children,
 }: {
@@ -5,6 +7,7 @@ export default function EmbeddedChatbotLayout({
 }) {
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900">
+      <ChatbotThemeLock />
       {children}
     </div>
   )

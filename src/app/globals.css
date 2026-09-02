@@ -336,6 +336,55 @@ body {
   }
 }
 
+.landing-grid {
+  background-image: linear-gradient(to right, rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.landing-marquee {
+  display: flex;
+  width: max-content;
+  animation: landingMarquee 28s linear infinite;
+}
+
+@keyframes landingMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.landing-contact-dark input,
+.landing-contact-dark textarea {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
+.landing-contact-dark input::placeholder,
+.landing-contact-dark textarea::placeholder {
+  color: rgba(226, 232, 240, 0.55);
+}
+
+.landing-contact-dark h1,
+.landing-contact-dark h2,
+.landing-contact-dark p,
+.landing-contact-dark label {
+  color: #e2e8f0;
+}
+
+.landing-contact-dark > div {
+  max-width: none;
+}
+
+.landing-contact-dark > div > div {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .widget-header-sheen,
   .widget-status-pulse,
