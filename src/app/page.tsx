@@ -187,7 +187,7 @@ function Hero() {
   }, [showFilm]);
 
   return (
-    <section ref={ref} className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#050508] px-[7%] py-3 sm:px-[11%] sm:py-5 lg:py-7">
+    <section ref={ref} className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#050508] px-[3%] py-3 sm:px-[4%] sm:py-5 lg:py-7">
       {/* ——— ambient glow breathing around the frame ——— */}
       <div aria-hidden className="absolute inset-0">
         <div className="animate-aurora absolute -top-32 left-1/2 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-[130px]" />
@@ -200,7 +200,7 @@ function Hero() {
       {/* ——— CINEMATIC FRAME: inset video panel with border + space on all sides ——— */}
       <motion.div
         style={{ y: yBg, scale: scaleBg }}
-        className="absolute inset-x-[7%] bottom-3 top-3 overflow-hidden rounded-[26px] border border-white/15 shadow-[0_50px_140px_-40px_rgba(139,92,246,0.45)] sm:inset-x-[11%] sm:bottom-5 sm:top-5 lg:bottom-7 lg:top-7"
+        className="absolute inset-x-[3%] bottom-3 top-3 overflow-hidden rounded-[26px] border border-white/15 shadow-[0_50px_140px_-40px_rgba(139,92,246,0.45)] sm:inset-x-[4%] sm:bottom-5 sm:top-5 lg:bottom-7 lg:top-7"
         aria-hidden={!showFilm}
       >
         <video
