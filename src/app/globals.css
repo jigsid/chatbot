@@ -342,10 +342,21 @@ body {
   background-size: 44px 44px;
 }
 
+.landing-grid-dark {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 40%, transparent 100%);
+}
+
 .landing-marquee {
   display: flex;
   width: max-content;
   animation: landingMarquee 28s linear infinite;
+}
+
+.landing-marquee:hover {
+  animation-play-state: paused;
 }
 
 @keyframes landingMarquee {
@@ -355,6 +366,52 @@ body {
   to {
     transform: translateX(-50%);
   }
+}
+
+@keyframes aurora-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.08); }
+  66% { transform: translate(-30px, 24px) scale(0.96); }
+}
+
+.animate-aurora {
+  animation: aurora-drift 14s ease-in-out infinite;
+}
+
+.animate-aurora-slow {
+  animation: aurora-drift 22s ease-in-out infinite;
+}
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float-soft 6s ease-in-out infinite;
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, #fff 10%, #a5f3fc 45%, #c4b5fd 70%, #f0abfc 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.35);
+  color: #fff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
 }
 
 .landing-contact-dark input,

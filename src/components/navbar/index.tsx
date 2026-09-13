@@ -6,189 +6,129 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { MotionDiv, MotionNav, navVariants } from "@/components/motion-wrapper";
-import { Menu, LogIn } from "lucide-react";
+import { Menu, X, LogIn, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
+
+const links = [
+  { href: "#features", label: "Features" },
+  { href: "#pricing", label: "Pricing" },
+  { href: "#news", label: "Insights" },
+  { href: "#contact", label: "Contact" },
+];
 
 function NavBar() {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 20;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [scrolled]);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <MotionNav
       initial="hidden"
       animate="visible"
       variants={navVariants}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-black/70 backdrop-blur-lg shadow-lg border-b border-magenta/30"
-          : "bg-transparent"
-      }`}
+      className="fixed inset-x-0 top-0 z-50"
     >
-      <div className="flex justify-between items-center px-4 py-3 max-w-7xl mx-auto">
-        <MotionDiv
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center justify-center"
-        >
-          <Link href="/" className="flex items-center group">
-            <Image
-              src="/logo.png"
-              width={60}
-              height={60}
-              alt="logo"
-              className="transition-transform duration-300 group-hover:scale-110"
-            />
-            <span className="text-xl font-bold -ml-3 bg-gradient-to-r from-slate-200 to-slate-300 bg-clip-text text-transparent group-hover:from-violet-300 group-hover:to-slate-200 transition-all duration-300">
-              Smart
-              <span className="text-violet-300 group-hover:text-slate-200">
-                Rep
-              </span>{" "}
-              AI
-            </span>
-          </Link>
-        </MotionDiv>
+      <div
+        className={`mx-auto mt-3 flex max-w-7xl items-center justify-between gap-3 rounded-2xl border px-4 py-2.5 transition-all duration-300 ${
+          scrolled
+            ? "border-white/10 bg-[#0A0A14]/80 shadow-[0_16px_50px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl"
+            : "border-white/[0.06] bg-black/30 backdrop-blur-md"
+        } mx-3 sm:mx-6 lg:mx-auto`}
+      >
+        <Link href="/" className="group flex items-center gap-2">
+          <Image
+            src="/logo.png"
+            width={40}
+            height={40}
+            alt="SmartRep AI logo"
+            className="transition-transform duration-300 group-hover:scale-105"
+          />
+          <span className="text-[17px] font-bold tracking-tight text-white">
+            Smart<span className="bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">Rep</span> AI
+          </span>
+        </Link>
 
-        {/* Desktop Menu */}
-        <MotionDiv
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="hidden md:block"
-        >
-          <ul className="flex gap-8 font-medium text-sm text-slate-300">
-            {[
-              { href: "#features", label: "Features" },
-              { href: "#pricing", label: "Pricing" },
-              { href: "#news", label: "News Room" },
-              { href: "#contact", label: "Contact" },
-            ].map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="relative hover:text-slate-100 transition-colors duration-300 py-2"
-                >
-                  <span>{item.label}</span>
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-300/50 scale-x-0 transition-transform duration-300 origin-left hover:scale-x-100" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </MotionDiv>
+        <div className="hidden items-center gap-1 md:flex">
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
 
-        {/* Auth Buttons */}
-        <MotionDiv
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="hidden md:flex gap-4 items-center"
-        >
+        <div className="hidden items-center gap-2.5 md:flex">
           <SignedIn>
             <Link href="/dashboard">
-              <Button className="bg-violet-500/80 hover:bg-violet-500/90 text-white px-6 py-2 rounded-lg shadow-lg shadow-violet-500/10 hover:shadow-violet-500/20 transition-all duration-300 backdrop-blur-sm">
-                Dashboard
+              <Button className="rounded-xl bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200">
+                Dashboard <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
-            <div className="border-2 border-slate-700/50 rounded-full transition-transform duration-300 hover:scale-105 hover:border-violet-300/30 hover:shadow-lg hover:shadow-violet-500/10">
+            <div className="rounded-full border border-white/15 p-0.5">
               <UserButton />
             </div>
           </SignedIn>
           <SignedOut>
+            <Link href="/dashboard" className="text-sm font-medium text-slate-300 transition hover:text-white">
+              Sign in
+            </Link>
             <Link href="/dashboard">
-              <Button className="bg-violet-500/80 hover:bg-violet-500/90 text-white px-6 py-2 rounded-lg shadow-lg shadow-violet-500/10 hover:shadow-violet-500/20 transition-all duration-300 flex items-center gap-2 backdrop-blur-sm">
-                <LogIn className="w-4 h-4" />
-                Sign In
+              <Button className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 font-semibold text-white shadow-lg transition hover:brightness-110">
+                <LogIn className="mr-1.5 h-4 w-4" /> Get started
               </Button>
             </Link>
           </SignedOut>
-        </MotionDiv>
+        </div>
 
-        {/* Mobile Menu Button */}
-        <MotionDiv
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="md:hidden"
+        <button
+          onClick={() => setOpen(!open)}
+          aria-label="Toggle menu"
+          className="rounded-xl border border-white/10 bg-white/5 p-2 text-white md:hidden"
         >
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-slate-300 hover:text-slate-100 transition-colors"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-        </MotionDiv>
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
 
-      {/* Mobile Menu */}
       <MotionDiv
         initial={{ height: 0, opacity: 0 }}
-        animate={{
-          height: mobileMenuOpen ? "auto" : 0,
-          opacity: mobileMenuOpen ? 1 : 0,
-        }}
-        transition={{ duration: 0.3 }}
-        className="md:hidden overflow-hidden bg-slate-900/80 backdrop-blur-lg border-t border-slate-800/30"
+        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.28 }}
+        className="mx-3 overflow-hidden md:hidden"
       >
-        <div className="px-4 py-4">
-          <ul className="flex flex-col gap-3 font-medium text-slate-300">
-            {[
-              { href: "#features", label: "Features" },
-              { href: "#pricing", label: "Pricing" },
-              { href: "#news", label: "News Room" },
-              { href: "#contact", label: "Contact" },
-            ].map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 px-4 hover:bg-slate-800/50 rounded-lg transition-colors duration-300 hover:text-slate-100"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-            <li className="pt-3 border-t border-slate-800/30">
-              <SignedIn>
-                <div className="flex items-center gap-4 px-4">
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1"
-                  >
-                    <Button className="w-full bg-violet-500/80 hover:bg-violet-500/90 text-white px-6 py-2 rounded-lg shadow-lg shadow-violet-500/10 hover:shadow-violet-500/20 transition-all duration-300 backdrop-blur-sm">
-                      Dashboard
-                    </Button>
-                  </Link>
-                  <div className="border-2 border-slate-700/50 rounded-full transition-transform duration-300 hover:scale-105 hover:border-violet-300/30 hover:shadow-lg hover:shadow-violet-500/10">
-                    <UserButton />
-                  </div>
-                </div>
-              </SignedIn>
-              <SignedOut>
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4"
-                >
-                  <Button className="w-full bg-violet-500/80 hover:bg-violet-500/90 text-white px-6 py-2 rounded-lg shadow-lg shadow-violet-500/10 hover:shadow-violet-500/20 transition-all duration-300 flex items-center justify-center gap-2 backdrop-blur-sm">
-                    <LogIn className="w-4 h-4" />
-                    Sign In
-                  </Button>
-                </Link>
-              </SignedOut>
-            </li>
-          </ul>
+        <div className="mt-2 rounded-2xl border border-white/10 bg-[#0A0A14]/95 p-3 shadow-2xl backdrop-blur-xl">
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              className="block rounded-xl px-4 py-3 text-[15px] font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
+            >
+              {l.label}
+            </Link>
+          ))}
+          <div className="mt-2 border-t border-white/10 pt-3">
+            <SignedIn>
+              <Link href="/dashboard" onClick={() => setOpen(false)}>
+                <Button className="w-full rounded-xl bg-white font-semibold text-slate-950">Dashboard</Button>
+              </Link>
+            </SignedIn>
+            <SignedOut>
+              <Link href="/dashboard" onClick={() => setOpen(false)}>
+                <Button className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 font-semibold text-white">
+                  Get started
+                </Button>
+              </Link>
+            </SignedOut>
+          </div>
         </div>
       </MotionDiv>
     </MotionNav>

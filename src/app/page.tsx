@@ -3,28 +3,29 @@
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { pricingCards } from "@/constants/landing-page";
+import { Card, CardContent } from "@/components/ui/card";
 import { blogPosts } from "@/constants/blog-posts";
-import clsx from "clsx";
 import {
+  ArrowRight,
   ArrowRightCircleIcon,
+  BadgeCheck,
+  Bot,
+  CalendarCheck,
   Check,
-  ChevronDown,
+  Globe,
+  Languages,
+  LineChart,
+  Lock,
+  MessagesSquare,
+  Play,
+  Pause,
+  Plug,
+  Quote,
+  ShieldCheck,
   Sparkles,
   Star,
-  Play,
+  Workflow,
   Zap,
-  Shield,
-  Globe,
-  Pause,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,737 +33,653 @@ import parse from "html-react-parser";
 import { getMonthName } from "@/lib/utils";
 import Contact from "@/components/contact";
 import ChatbotIframe from "./ChatbotIframe";
-import {
-  MotionDiv,
-  MotionH1,
-  MotionH2,
-  MotionP,
-  MotionSection,
-  MotionSpan,
-  fadeInUp,
-  fadeInDown,
-  fadeInLeft,
-  fadeInRight,
-  scaleUp,
-  staggerContainer,
-  staggerFast,
-  containerVariants,
-  itemVariants,
-  MotionButton,
-  letterAnimation,
-  textContainer,
-} from "@/components/motion-wrapper";
-import { useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useState } from "react";
+import CountUp from "react-countup";
+import SmoothScroll from "@/components/landing/smooth-scroll";
+import ScrollProgress from "@/components/landing/scroll-progress";
+import ParticleField from "@/components/landing/particle-field";
+import { Reveal, SectionHeading } from "@/components/landing/reveal";
+import SpotlightCard from "@/components/landing/spotlight-card";
+import { Magnetic } from "@/components/landing/magnetic";
+import LogoMarquee from "@/components/landing/logo-marquee";
+import HeroVisual from "@/components/landing/hero-visual";
 
-const stats = [
-  { number: "500+", label: "Active Users", prefix: "Over" },
-  { number: "1M+", label: "Messages Handled", prefix: "More than" },
-  { number: "24/7", label: "Support", prefix: "Always-on" },
-  { number: "98%", label: "Satisfaction Rate", prefix: "Industry-leading" },
+const heroStats = [
+  { value: 500, suffix: "+", label: "Active businesses", sub: "and growing weekly" },
+  { value: 1, suffix: "M+", label: "Messages resolved", sub: "with context intact", decimals: 0 },
+  { value: 0.2, suffix: "s", label: "Median response", sub: "low-latency edge", decimals: 1 },
+  { value: 98, suffix: "%", label: "Satisfaction", sub: "auto-resolved chats", decimals: 0 },
 ];
+
+const featureCards = [
+  {
+    icon: MessagesSquare,
+    tint: "from-violet-500 to-purple-600",
+    title: "Intelligent responses",
+    copy: "Context-aware answers trained on your docs, tone, and policies — not generic chatbot guesses.",
+  },
+  {
+    icon: Plug,
+    tint: "from-cyan-500 to-sky-600",
+    title: "Seamless integration",
+    copy: "Drop-in widget, robust API, CRM + Stripe + email hooks. Live in minutes, not sprints.",
+  },
+  {
+    icon: LineChart,
+    tint: "from-fuchsia-500 to-pink-600",
+    title: "Analytics that teach",
+    copy: "See why customers ask, what resolves, and where revenue leaks — then auto-improve.",
+  },
+  {
+    icon: Lock,
+    tint: "from-emerald-500 to-teal-600",
+    title: "Enterprise security",
+    copy: "Encryption in transit + at rest, scoped data access, and audit-ready controls.",
+  },
+  {
+    icon: Zap,
+    tint: "from-amber-500 to-orange-600",
+    title: "Always-on scale",
+    copy: "99.9% uptime on distributed edge infra. Peak traffic feels like any other Tuesday.",
+  },
+  {
+    icon: Languages,
+    tint: "from-indigo-500 to-blue-600",
+    title: "Omnichannel + multilingual",
+    copy: "Web, mobile, and social with native-quality language detection built in.",
+  },
+];
+
+const steps = [
+  {
+    n: "01",
+    icon: Globe,
+    title: "Connect your world",
+    copy: "Add your domain, import docs and FAQs. Nova learns your voice in minutes.",
+  },
+  {
+    n: "02",
+    icon: Workflow,
+    title: "Design the flow",
+    copy: "Bookings, payments, handoffs, escalations — wire real actions, not just replies.",
+  },
+  {
+    n: "03",
+    icon: CalendarCheck,
+    title: "Launch + compound",
+    copy: "Go live with the widget, then watch analytics turn chats into conversions.",
+  },
+];
+
+const tiers = [
+  {
+    name: "Starter",
+    price: "$29",
+    blurb: "For solo founders testing AI support.",
+    cta: "Start free",
+    featured: false,
+    features: ["1 domain", "1k chats / mo", "Widget + API", "Basic analytics", "Email support"],
+  },
+  {
+    name: "Ultimate",
+    price: "$0",
+    strike: "$79",
+    blurb: "Full SmartRep power — limited launch offer.",
+    cta: "Claim Ultimate",
+    featured: true,
+    features: [
+      "Unlimited domains",
+      "Unlimited contacts",
+      "Unlimited emails / mo",
+      "Bookings + payments",
+      "Advanced analytics",
+      "Priority support",
+    ],
+  },
+  {
+    name: "Scale",
+    price: "$149",
+    blurb: "For teams with volume + compliance needs.",
+    cta: "Talk to us",
+    featured: false,
+    features: ["Everything in Ultimate", "SSO + audit logs", "Custom data retention", "SLA 99.9%", "Dedicated CSM"],
+  },
+];
+
+const testimonials = [
+  {
+    quote:
+      "We replaced three tools with SmartRep. It books demos while we sleep and answers like our best rep.",
+    name: "Maya Chen",
+    role: "Head of Growth, WaveSync",
+    initials: "MC",
+  },
+  {
+    quote:
+      "Resolution time went from hours to seconds. Customers literally say 'that was fast' in the chat.",
+    name: "Daniel Okafor",
+    role: "Founder, Cubetech",
+    initials: "DO",
+  },
+  {
+    quote:
+      "The analytics paid for itself. We found our top refund reason in week one and fixed it.",
+    name: "Sofia Marino",
+    role: "CX Lead, PlusMind",
+    initials: "SM",
+  },
+];
+
+function Hero({ isPlaying, onToggle }: { isPlaying: boolean; onToggle: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const yFg = useTransform(scrollYProgress, [0, 1], ["0%", "-6%"]);
+  const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  return (
+    <section ref={ref} className="relative flex min-h-screen items-center overflow-hidden bg-[#050508] pb-16 pt-32">
+      {/* ——— ATMOSPHERE: aurora + grid + particles = "another world" ——— */}
+      <motion.div style={{ y: yBg }} className="absolute inset-0" aria-hidden>
+        <div className="animate-aurora absolute -top-40 left-1/2 h-[560px] w-[900px] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[140px]" />
+        <div className="animate-aurora-slow absolute -left-40 top-1/3 h-[480px] w-[480px] rounded-full bg-cyan-500/15 blur-[130px]" />
+        <div className="animate-aurora absolute -right-40 bottom-0 h-[520px] w-[520px] rounded-full bg-fuchsia-600/15 blur-[130px]" />
+        <div className="landing-grid-dark absolute inset-0" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,transparent_30%,#050508_78%)]" />
+      </motion.div>
+      <div className="absolute inset-0 opacity-70" aria-hidden>
+        <ParticleField density={60} />
+      </div>
+
+      <motion.div style={{ y: yFg, opacity: fade }} className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6">
+        <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
+          {/* Copy */}
+          <div className="lg:col-span-6">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-2.5 rounded-full border border-white/12 bg-white/[0.06] py-1.5 pl-1.5 pr-4 text-[13px] text-slate-200 shadow-xl backdrop-blur-xl"
+            >
+              <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+                <Sparkles className="h-3 w-3" /> New
+              </span>
+              AI reps that book, sell & support — 24/7
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 26, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="mt-6 text-balance text-5xl font-bold leading-[1.02] tracking-tight text-white sm:text-6xl xl:text-7xl"
+            >
+              Step into a world where
+              <span className="text-gradient block">customers never wait.</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.22 }}
+              className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-slate-300/90"
+            >
+              SmartRep AI is the conversational platform that resolves inquiries, books
+              appointments, and takes payments — trained on your business, live on your
+              site in minutes.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.32 }}
+              className="mt-8 flex flex-col gap-3 sm:flex-row"
+            >
+              <Magnetic>
+                <Link href="/dashboard">
+                  <Button className="group relative h-[52px] w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-8 py-6 text-base font-semibold text-white shadow-[0_16px_50px_-12px_rgba(139,92,246,0.7)] transition hover:shadow-[0_20px_70px_-12px_rgba(139,92,246,0.9)] sm:w-auto">
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                    <span className="relative flex items-center gap-2">
+                      Start free trial <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </Button>
+                </Link>
+              </Magnetic>
+              <Button
+                variant="outline"
+                onClick={onToggle}
+                className="h-[52px] rounded-xl border-white/15 bg-white/[0.06] px-8 py-6 text-base text-white backdrop-blur-xl transition hover:border-white/30 hover:bg-white/10"
+              >
+                {isPlaying ? <Pause className="mr-2 h-[18px] w-[18px]" /> : <Play className="mr-2 h-[18px] w-[18px]" />}
+                {isPlaying ? "Pause live demo" : "Watch live demo"}
+              </Button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.7 }}
+              className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3"
+            >
+              <div className="flex -space-x-2.5">
+                {["AK", "JM", "RS", "TW"].map((t, i) => (
+                  <div
+                    key={t}
+                    className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#050508] text-[11px] font-bold text-white ${
+                      ["bg-violet-600", "bg-cyan-600", "bg-fuchsia-600", "bg-emerald-600"][i]
+                    }`}
+                  >
+                    {t}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  ))}
+                  <span className="ml-1.5 text-sm font-semibold text-white">4.9/5</span>
+                </div>
+                <p className="text-[13px] text-slate-400">Loved by 500+ modern businesses</p>
+              </div>
+              <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-[12px] text-slate-300 sm:flex">
+                <BadgeCheck className="h-4 w-4 text-emerald-400" /> No credit card required
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Visual */}
+          <motion.div
+            initial={{ opacity: 0, y: 36, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.9, delay: 0.25 }}
+            className="lg:col-span-6"
+          >
+            <HeroVisual isPlaying={isPlaying} onToggle={onToggle} />
+            <div className="mt-8 flex flex-wrap gap-2.5">
+              {["Self-learning", "Multi-modal", "0.2s latency", "Enterprise-ready"].map((t) => (
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-medium text-slate-200 backdrop-blur"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
+                  {t}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Stats */}
+        <div className="mt-16 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {heroStats.map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 + i * 0.1, duration: 0.6 }}
+              className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center backdrop-blur-xl transition hover:border-white/20 hover:bg-white/[0.07]"
+            >
+              <p className="text-3xl font-bold tracking-tight text-white">
+                <CountUp end={s.value} decimals={s.decimals ?? 0} duration={2} suffix={s.suffix} enableScrollSpy scrollSpyOnce />
+              </p>
+              <p className="mt-1 text-sm font-semibold text-slate-200">{s.label}</p>
+              <p className="text-xs text-slate-400">{s.sub}</p>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* scroll cue */}
+      <div className="absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 md:flex">
+        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-slate-500">Scroll to explore</span>
+        <div className="flex h-11 w-7 justify-center rounded-full border border-white/15 bg-white/[0.03] p-1.5">
+          <motion.div
+            animate={{ y: [0, 18, 0], opacity: [1, 0.2, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            className="h-2.5 w-1.5 rounded-full bg-gradient-to-b from-cyan-400 to-violet-500"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const [isPlaying, setIsPlaying] = useState(true);
-
-  const toggleVideoPlayback = () => {
-    const video = document.getElementById('chatbot-video') as HTMLVideoElement;
-    if (video) {
-      if (video.paused) {
-        video.play();
-        setIsPlaying(true);
-      } else {
-        video.pause();
-        setIsPlaying(false);
-      }
+  const toggleVideo = () => {
+    const video = document.getElementById("chatbot-video") as HTMLVideoElement | null;
+    if (!video) return;
+    if (video.paused) {
+      video.play();
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
     }
   };
 
   return (
-    <div className="overflow-hidden">
-      <NavBar />
+    <SmoothScroll>
+      <div className="min-h-screen bg-white text-slate-950 antialiased">
+        <ScrollProgress />
+        <NavBar />
 
-      {/* Hero Section - 2025 Edition */}
-      <MotionSection
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="min-h-screen pt-24 pb-32 flex items-center relative bg-gradient-to-b from-black via-slate-950 to-slate-900 overflow-hidden"
-      >
-        {/* Modern Glass Morphism Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(138,43,226,0.15),_transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(0,230,255,0.12),_transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(125,58,245,0.08),_transparent_35%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,_rgba(0,0,0,0.7),_rgba(0,0,0,0.4)_50%,_rgba(0,0,0,0.7))]" />
-        </div>
+        <main>
+          <Hero isPlaying={isPlaying} onToggle={toggleVideo} />
+          <LogoMarquee />
 
-        {/* Subtle Animated Noise Texture */}
-        <div className="absolute inset-0 bg-noise opacity-[0.02] mix-blend-soft-light"></div>
-        
-        {/* Container */}
-        <div className="container mx-auto px-4 sm:px-6 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-            {/* Text Content - Left Side */}
-            <div className="lg:col-span-6 flex flex-col gap-8">
-              {/* Smart Badge */}
-              <MotionSpan
-                variants={fadeInDown}
-                className="relative self-start"
-              >
-                <div className="relative px-5 py-2 bg-white/5 backdrop-blur-2xl rounded-full text-sm font-medium tracking-wide flex items-center gap-2 border border-white/10 shadow-lg shadow-black/20 hover:border-white/15 transition-all duration-300">
-                  <Zap className="w-4 h-4 text-cyan-400" />
-                  <span className="bg-gradient-to-r from-white via-cyan-200 to-violet-200 bg-clip-text text-transparent">
-                    AI-Powered Customer Experience
-                  </span>
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
-                </div>
-              </MotionSpan>
-
-              {/* Title */}
-              <div className="space-y-4">
-                <MotionH1
-                  variants={fadeInUp}
-                  className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.15]"
-                >
-                  <span className="bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
-                    Conversational AI
-                  </span>
-                </MotionH1>
-                <MotionH1
-                  variants={fadeInUp}
-                  className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.15]"
-                >
-                  <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                    For Modern Business
-                  </span>
-                </MotionH1>
-                <MotionP
-                  variants={fadeInUp}
-                  className="max-w-lg text-lg text-slate-300/90 pt-2 leading-relaxed"
-                >
-                  Elevate customer support with our AI platform that handles inquiries, 
-                  automates responses, and delivers personalized experiences 24/7.
-                </MotionP>
-              </div>
-
-              {/* Key Features Tags */}
-              <MotionDiv
-                variants={fadeInUp}
-                className="flex flex-wrap gap-2.5"
-              >
-                {["Self-Learning", "Multi-modal", "Low-latency", "Enterprise-ready"].map((tag, i) => (
-                  <span 
-                    key={i} 
-                    className="px-3 py-1 bg-white/5 backdrop-blur-md rounded-full text-xs font-medium border border-white/10 text-slate-300 flex items-center gap-1.5"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500"></div>
-                    {tag}
-                  </span>
+          {/* ═══ WORLD 2 — LIGHT · porcelain studio ═══ */}
+          <section id="features" className="relative overflow-hidden bg-[#FAFAF8] py-24 sm:py-32">
+            <div aria-hidden className="landing-grid absolute inset-0 opacity-70 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)]" />
+            <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+              <SectionHeading
+                eyebrow="Enterprise features"
+                title={<>Everything you need to <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">support, sell & scale</span></>}
+                copy="A complete toolkit designed for lean teams and demanding enterprises alike — clean, fast, and obsessively reliable."
+              />
+              <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {featureCards.map((f, i) => (
+                  <Reveal key={f.title} delay={(i % 3) * 0.08}>
+                    <SpotlightCard className="h-full p-7">
+                      <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${f.tint} shadow-lg`}>
+                        <f.icon className="h-[22px] w-[22px] text-white" />
+                      </div>
+                      <h3 className="mt-5 text-lg font-bold tracking-tight text-slate-950">{f.title}</h3>
+                      <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{f.copy}</p>
+                      <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700">
+                        Learn more <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </SpotlightCard>
+                  </Reveal>
                 ))}
-              </MotionDiv>
+              </div>
+            </div>
+          </section>
 
-              {/* CTA Buttons */}
-              <MotionDiv
-                variants={fadeInUp}
-                className="flex flex-col sm:flex-row gap-4 pt-1"
-              >
-                <div className="relative group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-300"></div>
-                  <Link href="/dashboard">
-                    <Button className="relative bg-gradient-to-r from-violet-600 to-purple-600 px-8 py-6 text-base font-medium text-white rounded-lg shadow-xl hover:shadow-violet-500/30 transition-all duration-300 flex items-center gap-2 w-full sm:w-auto justify-center border border-white/10 overflow-hidden group">
-                      <div className="absolute inset-0 w-full h-full bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                      Start Free Trial
-                      <ArrowRightCircleIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+          {/* ═══ WORLD 3 — DARK · deep immersion ═══ */}
+          <section className="relative overflow-hidden bg-[#080812] py-24 sm:py-32">
+            <div aria-hidden className="absolute inset-0">
+              <div className="animate-aurora absolute left-1/4 top-0 h-[420px] w-[620px] rounded-full bg-violet-700/20 blur-[140px]" />
+              <div className="animate-aurora-slow absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-cyan-500/10 blur-[130px]" />
+              <div className="landing-grid-dark absolute inset-0" />
+            </div>
+            <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+              <div className="grid items-center gap-14 lg:grid-cols-2">
+                <div>
+                  <SectionHeading
+                    align="left"
+                    dark
+                    eyebrow="How it works"
+                    title={<>From first click to <span className="text-gradient">closed deal</span> in three moves</>}
+                    copy=" Nova doesn't just chat — it takes action. Watch it qualify, book, and collect payment while your team sleeps."
+                  />
+                  <div className="mt-10 space-y-4">
+                    {steps.map((s, i) => (
+                      <Reveal key={s.n} delay={i * 0.1}>
+                        <div className="group flex gap-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl transition hover:border-violet-400/30 hover:bg-white/[0.07]">
+                          <span className="bg-gradient-to-b from-violet-400 to-cyan-300 bg-clip-text font-mono text-sm font-bold text-transparent">
+                            {s.n}
+                          </span>
+                          <div>
+                            <p className="flex items-center gap-2 font-semibold text-white">
+                              <s.icon className="h-[18px] w-[18px] text-cyan-300" /> {s.title}
+                            </p>
+                            <p className="mt-1.5 text-[15px] leading-relaxed text-slate-300/85">{s.copy}</p>
+                          </div>
+                        </div>
+                      </Reveal>
+                    ))}
+                  </div>
+                  <Reveal delay={0.3}>
+                    <Link href="/dashboard" className="mt-8 inline-flex">
+                      <Magnetic>
+                        <Button className="rounded-xl bg-white px-7 py-6 font-semibold text-slate-950 shadow-xl transition hover:bg-slate-100">
+                          Build your AI rep <ArrowRightCircleIcon className="ml-1 h-5 w-5" />
+                        </Button>
+                      </Magnetic>
+                    </Link>
+                  </Reveal>
+                </div>
+
+                {/* Live conversation panel */}
+                <Reveal delay={0.15}>
+                  <div className="relative">
+                    <div aria-hidden className="absolute -inset-5 rounded-[28px] bg-gradient-to-br from-cyan-500/20 to-violet-600/25 blur-3xl" />
+                    <div className="relative rounded-3xl border border-white/12 bg-slate-950/80 p-6 shadow-2xl backdrop-blur-xl">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400">
+                            <Bot className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-white">Nova is live on your site</p>
+                            <p className="text-xs text-emerald-300">● Resolving 34 chats right now</p>
+                          </div>
+                        </div>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">EN · auto</span>
+                      </div>
+                      <div className="mt-5 space-y-3">
+                        {[
+                          { q: "Do you offer refunds?", a: "Yes — 30-day, no-questions refunds. I can start yours now if you'd like." },
+                          { q: "Can I book for Friday?", a: "Absolutely. 10:30 AM and 2:15 PM are open — shall I hold 10:30?" },
+                        ].map((c) => (
+                          <div key={c.q} className="space-y-2">
+                            <div className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-white/10 px-4 py-2.5 text-sm text-slate-100">
+                              {c.q}
+                            </div>
+                            <div className="w-fit max-w-[90%] rounded-2xl rounded-bl-md border border-violet-400/20 bg-gradient-to-r from-violet-600/25 to-cyan-500/15 px-4 py-2.5 text-sm leading-relaxed text-slate-100">
+                              {c.a}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-5 grid grid-cols-3 gap-2.5 text-center">
+                        {[
+                          { k: "CSAT", v: "98%" },
+                          { k: "Deflect", v: "73%" },
+                          { k: "Booked", v: "+41%" },
+                        ].map((m) => (
+                          <div key={m.k} className="rounded-xl border border-white/10 bg-white/[0.04] px-2 py-3">
+                            <p className="text-lg font-bold text-white">{m.v}</p>
+                            <p className="text-[11px] uppercase tracking-widest text-slate-400">{m.k}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              </div>
+            </div>
+          </section>
+
+          {/* ═══ WORLD 4 — LIGHT · pricing clarity ═══ */}
+          <section id="pricing" className="relative bg-white py-24 sm:py-32">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <SectionHeading
+                eyebrow="Pricing"
+                title="One plan that wins. Zero fine print."
+                copy="Start free, upgrade when you grow. Every plan includes the widget, API, and human support."
+              />
+              <div className="mt-14 grid items-stretch gap-5 lg:grid-cols-3">
+                {tiers.map((t, i) => (
+                  <Reveal key={t.name} delay={i * 0.1} className="h-full">
+                    <div
+                      className={`relative flex h-full flex-col rounded-3xl p-8 transition hover:-translate-y-1.5 ${
+                        t.featured
+                          ? "overflow-hidden bg-slate-950 text-white shadow-[0_30px_90px_-20px_rgba(139,92,246,0.6)] ring-1 ring-violet-400/40"
+                          : "border border-slate-900/10 bg-[#FAFAF8] shadow-[0_16px_50px_-24px_rgba(15,23,42,0.3)]"
+                      }`}
+                    >
+                      {t.featured && (
+                        <>
+                          <div aria-hidden className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-fuchsia-600/30 blur-[80px]" />
+                          <div aria-hidden className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-cyan-500/25 blur-[80px]" />
+                          <span className="absolute right-6 top-6 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white">
+                            Most popular
+                          </span>
+                        </>
+                      )}
+                      <p className={`text-sm font-bold uppercase tracking-[0.2em] ${t.featured ? "text-cyan-300" : "text-violet-700"}`}>{t.name}</p>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-5xl font-bold tracking-tight">{t.price}</span>
+                        {t.strike && <span className="text-lg text-slate-400 line-through">{t.strike}</span>}
+                        <span className={`text-sm ${t.featured ? "text-slate-300" : "text-slate-500"}`}>/ month</span>
+                      </div>
+                      <p className={`mt-2 text-[15px] ${t.featured ? "text-slate-300" : "text-slate-600"}`}>{t.blurb}</p>
+                      <ul className="mt-6 flex-1 space-y-3">
+                        {t.features.map((f) => (
+                          <li key={f} className="flex items-center gap-2.5 text-[15px]">
+                            <span className={`flex h-[22px] w-[22px] items-center justify-center rounded-full ${t.featured ? "bg-emerald-400/15" : "bg-emerald-500/10"}`}>
+                              <Check className={`h-3.5 w-3.5 ${t.featured ? "text-emerald-300" : "text-emerald-600"}`} />
+                            </span>
+                            <span className={t.featured ? "text-slate-200" : "text-slate-700"}>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link href={t.featured ? "/dashboard?plan=ultimate" : "/dashboard"} className="mt-8">
+                        <Button
+                          className={`h-12 w-full rounded-xl font-semibold transition ${
+                            t.featured
+                              ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg hover:brightness-110"
+                              : "border border-slate-900/15 bg-white text-slate-900 hover:bg-slate-950 hover:text-white"
+                          }`}
+                        >
+                          {t.cta}
+                        </Button>
+                      </Link>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ═══ WORLD 5 — LIGHT · social proof ═══ */}
+          <section className="relative border-y border-slate-900/10 bg-[#F4F4F2] py-24 sm:py-28">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <SectionHeading
+                eyebrow="Loved in production"
+                title="Teams feel the difference in week one"
+              />
+              <div className="mt-12 grid gap-5 md:grid-cols-3">
+                {testimonials.map((t, i) => (
+                  <Reveal key={t.name} delay={i * 0.1}>
+                    <SpotlightCard className="flex h-full flex-col p-7">
+                      <Quote className="h-6 w-6 text-violet-500" />
+                      <p className="mt-4 flex-1 text-[16px] leading-relaxed text-slate-800">“{t.quote}”</p>
+                      <div className="mt-6 flex items-center gap-3 border-t border-slate-900/10 pt-5">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-cyan-500 text-xs font-bold text-white">
+                          {t.initials}
+                        </span>
+                        <div>
+                          <p className="text-sm font-bold text-slate-950">{t.name}</p>
+                          <p className="text-[13px] text-slate-500">{t.role}</p>
+                        </div>
+                      </div>
+                    </SpotlightCard>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ═══ WORLD 6 — LIGHT · insights ═══ */}
+          <section id="news" className="bg-white py-24 sm:py-32">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <SectionHeading
+                eyebrow="Latest insights"
+                title="Learn the playbooks behind great CX"
+                copy="Field notes on conversational AI, automation, and support that converts."
+              />
+              <div className="mt-12 grid gap-5 md:grid-cols-3">
+                {blogPosts?.slice(0, 3).map((post, i) => (
+                  <Reveal key={post.id} delay={i * 0.1}>
+                    <Link href={`/${post.id}`} className="group block h-full">
+                      <Card className="h-full overflow-hidden rounded-3xl border-slate-900/10 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_70px_-24px_rgba(15,23,42,0.35)]">
+                        <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
+                          <Image
+                            src={post.image}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent" />
+                          <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-800 backdrop-blur">
+                            {getMonthName(new Date(post.createdAt).getMonth())} {new Date(post.createdAt).getDate()}
+                          </span>
+                        </div>
+                        <CardContent className="p-6">
+                          <h3 className="text-lg font-bold leading-snug tracking-tight text-slate-950 transition group-hover:text-violet-700">
+                            {post.title}
+                          </h3>
+                          <div className="mt-2 line-clamp-2 text-[15px] leading-relaxed text-slate-600">
+                            {parse(post.content.slice(0, 140) + "...")}
+                          </div>
+                          <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700">
+                            Read article <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          </span>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ═══ WORLD 7 — DARK FINALE · CTA + contact ═══ */}
+          <section id="contact" className="relative overflow-hidden bg-[#050508] py-24 sm:py-32">
+            <div aria-hidden className="absolute inset-0">
+              <div className="animate-aurora absolute left-1/2 top-0 h-[480px] w-[820px] -translate-x-1/2 rounded-full bg-violet-700/25 blur-[150px]" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_100%,rgba(34,211,238,0.12),transparent_70%)]" />
+              <div className="landing-grid-dark absolute inset-0 opacity-80" />
+            </div>
+            <div className="relative mx-auto max-w-5xl px-4 text-center sm:px-6">
+              <Reveal>
+                <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-cyan-200 backdrop-blur">
+                  <Bot className="h-3.5 w-3.5" /> Ready when you are
+                </p>
+              </Reveal>
+              <Reveal delay={0.1}>
+                <h2 className="mx-auto mt-5 max-w-3xl text-balance text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl">
+                  Give every visitor a <span className="text-gradient">five-star arrival.</span>
+                </h2>
+              </Reveal>
+              <Reveal delay={0.18}>
+                <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300/90">
+                  Launch your AI rep today — free to start, live in minutes, compounding every conversation after.
+                </p>
+              </Reveal>
+              <Reveal delay={0.26}>
+                <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                  <Magnetic>
+                    <Link href="/dashboard">
+                      <Button className="rounded-xl bg-white px-8 py-6 text-base font-semibold text-slate-950 shadow-2xl transition hover:bg-slate-100">
+                        Start free trial <ArrowRight className="ml-1 h-[18px] w-[18px]" />
+                      </Button>
+                    </Link>
+                  </Magnetic>
+                  <Link href="#pricing">
+                    <Button variant="outline" className="rounded-xl border-white/20 bg-white/5 px-8 py-6 text-base text-white backdrop-blur transition hover:bg-white/10">
+                      Compare plans
                     </Button>
                   </Link>
                 </div>
-
-                <Button 
-                  variant="outline" 
-                  onClick={toggleVideoPlayback}
-                  className="relative bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 px-8 py-6 text-base font-medium rounded-lg flex items-center gap-2 w-full sm:w-auto justify-center transition-all duration-300 overflow-hidden group"
-                >
-                  <div className="absolute inset-0 w-full h-full bg-white/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                  {isPlaying ? "Pause Demo" : "Play Demo"}
-                </Button>
-              </MotionDiv>
-
-              {/* Trust Indicators */}
-              <MotionDiv variants={fadeInUp} className="pt-2">
-                <p className="text-sm text-slate-400 mb-4 flex items-center gap-2">
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  Trusted by innovative companies
-                </p>
-                <div className="flex flex-wrap gap-4 sm:gap-5 items-center">
-                  <div className="h-8 grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100 group">
-                    <div className="h-8 px-3 bg-white/5 backdrop-blur-xl rounded-lg flex items-center gap-2 border border-white/10 hover:border-white/20 transition-all duration-300">
-                      <svg className="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-sm font-medium text-white">Cubetech</span>
-                    </div>
-                  </div>
-
-                  <div className="h-8 grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100 group">
-                    <div className="h-8 px-3 bg-white/5 backdrop-blur-xl rounded-lg flex items-center gap-2 border border-white/10 hover:border-white/20 transition-all duration-300">
-                      <svg className="w-5 h-5 text-violet-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M22 6l-10 7L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-sm font-medium text-white">WaveSync</span>
-                    </div>
-                  </div>
-
-                  <div className="h-8 grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100 group">
-                    <div className="h-8 px-3 bg-white/5 backdrop-blur-xl rounded-lg flex items-center gap-2 border border-white/10 hover:border-white/20 transition-all duration-300">
-                      <svg className="w-5 h-5 text-fuchsia-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M12 8v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M8 12h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-sm font-medium text-white">PlusMind</span>
-                    </div>
-                  </div>
-
-                  <div className="h-8 grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100 group">
-                    <div className="h-8 px-3 bg-white/5 backdrop-blur-xl rounded-lg flex items-center gap-2 border border-white/10 hover:border-white/20 transition-all duration-300">
-                      <svg className="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M8 21h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M12 17v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-sm font-medium text-white">TechFlow</span>
-                    </div>
-                  </div>
+              </Reveal>
+              <Reveal delay={0.3}>
+                <div className="mx-auto mt-12 max-w-3xl overflow-hidden rounded-3xl border border-white/12 bg-white/[0.04] text-left shadow-2xl backdrop-blur-xl">
+                  <Contact />
                 </div>
-              </MotionDiv>
+              </Reveal>
             </div>
+          </section>
+        </main>
 
-            {/* Video Showcase - Right Side */}
-            <MotionDiv
-              variants={fadeInRight}
-              className="lg:col-span-6 relative"
-            >
-              <div className="relative">
-                {/* Glow effects */}
-                <div className="absolute -inset-4 bg-gradient-to-br from-violet-600/20 via-cyan-600/20 to-fuchsia-600/20 rounded-3xl blur-3xl opacity-60"></div>
-                
-                {/* Video Container */}
-                <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-                  {/* Browser chrome */}
-                  <div className="p-2 bg-black/40 border-b border-white/5 flex items-center gap-2">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                    </div>
-                    <div className="flex-1 text-center">
-                      <div className="text-xs text-slate-400 bg-white/5 rounded-md py-1 px-3 max-w-[200px] mx-auto flex items-center justify-center gap-1">
-                        <div className="w-3 h-3 rounded-full bg-cyan-400/80"></div>
-                        smartrep-ai.app
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Video */}
-                  <div className="aspect-[16/9] w-full relative">
-                    <video 
-                      id="chatbot-video"
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                    >
-                      <source src="/chatbot.mp4" type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                    
-                    {/* Video overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
-                    
-                    {/* Play/Pause button overlay */}
-                    <button 
-                      onClick={toggleVideoPlayback}
-                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/20 shadow-xl opacity-0 hover:opacity-100 transition-opacity duration-300"
-                    >
-                      {isPlaying ? (
-                        <Pause className="w-6 h-6 text-white" />
-                      ) : (
-                        <Play className="w-6 h-6 text-white" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Floating badges */}
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                  className="absolute -bottom-5 -left-6 sm:-left-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-3 border border-white/10 shadow-lg backdrop-blur-xl hidden sm:flex"
-                >
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-cyan-400" />
-                    <span className="text-sm font-medium text-white">Enterprise Security</span>
-                  </div>
-                </MotionDiv>
-                
-                <MotionDiv
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.9, duration: 0.5 }}
-                  className="absolute top-1/2 -right-8 lg:-right-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-3 border border-white/10 shadow-lg backdrop-blur-xl hidden lg:flex"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center text-white">
-                      <Sparkles className="w-5 h-5 text-cyan-400" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-white/60">Response Time</div>
-                      <div className="text-white font-medium flex items-baseline gap-1">
-                        0.2s
-                        <span className="text-xs text-cyan-400">Instant</span>
-                      </div>
-                    </div>
-                  </div>
-                </MotionDiv>
-              </div>
-            </MotionDiv>
-          </div>
-          
-          {/* Stats Row */}
-          <MotionDiv
-            variants={fadeInUp}
-            className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6 mt-20 lg:mt-24 mb-4"
-          >
-            {stats.map((stat, index) => (
-              <div 
-                key={index}
-                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-6 text-center hover:bg-white/10 transition-all duration-300"
-              >
-                <div className="text-xs text-slate-400">{stat.prefix}</div>
-                <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mt-1">
-                  {stat.number}
-                </div>
-                <div className="text-sm text-slate-300 mt-1">{stat.label}</div>
-              </div>
-            ))}
-          </MotionDiv>
-        </div>
-
-        {/* Scroll Indicator */}
-        <MotionDiv
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2"
-        >
-          <Link href="#features" className="group flex flex-col items-center">
-              <p className="text-xs font-light text-slate-400 group-hover:text-cyan-300 transition-colors duration-300">
-                Discover Features
-              </p>
-              <div className="mt-2 w-8 h-12 rounded-full border border-white/10 flex items-center justify-center relative overflow-hidden">
-                <MotionDiv
-                  animate={{ 
-                    y: ["-100%", "100%"],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="w-1.5 h-3 bg-gradient-to-b from-cyan-400 to-violet-500 rounded-full"
-                />
-              </div>
-          </Link>
-        </MotionDiv>
-          
-      </MotionSection>
-
-      {/* Section Divider */}
-      <div className="relative h-24 bg-slate-950 overflow-hidden">
-        <MotionDiv
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
-          className="absolute inset-0"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(125,58,245,0.15),_transparent_50%)]"></div>
-          <div className="absolute h-px w-full top-1/2 bg-gradient-to-r from-transparent via-violet-500/20 to-transparent"></div>
-        </MotionDiv>
+        <Footer />
+        <ChatbotIframe />
       </div>
-
-      {/* Features Section */}
-      <MotionSection
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={containerVariants}
-        className="py-32 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950"
-        id="features"
-      >
-        <div className="container mx-auto px-4">
-          <MotionH2
-            variants={fadeInUp}
-            className="text-5xl font-bold text-center mb-6 text-slate-50"
-          >
-            Enterprise Features
-          </MotionH2>
-
-          <MotionP
-            variants={fadeInUp}
-            className="text-center text-slate-300/90 max-w-2xl mx-auto mb-24 font-light"
-          >
-            Comprehensive tools and capabilities designed for businesses of all
-            sizes
-          </MotionP>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {[
-              {
-                icon: "🎯",
-                title: "Intelligent Response System",
-                description:
-                  "Advanced AI algorithms ensure accurate and contextual responses to customer inquiries.",
-                variant: fadeInLeft,
-                delay: 0.1
-              },
-              {
-                icon: "🔄",
-                title: "Seamless Integration",
-                description:
-                  "Quick deployment with any existing platform through our robust API infrastructure.",
-                variant: fadeInUp,
-                delay: 0.2
-              },
-              {
-                icon: "📊",
-                title: "Analytics Dashboard",
-                description:
-                  "Comprehensive insights and metrics to track performance and customer engagement.",
-                variant: fadeInRight,
-                delay: 0.3
-              },
-              {
-                icon: "🔐",
-                title: "Enterprise Security",
-                description:
-                  "Bank-grade encryption and compliance with international data protection standards.",
-                variant: fadeInLeft,
-                delay: 0.4
-              },
-              {
-                icon: "⚡",
-                title: "High Availability",
-                description:
-                  "99.9% uptime guarantee with distributed infrastructure.",
-                variant: fadeInUp,
-                delay: 0.5
-              },
-              {
-                icon: "🔧",
-                title: "Custom Configuration",
-                description:
-                  "Tailored solutions to match your specific business requirements.",
-                variant: fadeInRight,
-                delay: 0.6
-              },
-              {
-                icon: "🌐",
-                title: "Multi-language Support",
-                description:
-                  "Communicate with customers in their preferred language.",
-                variant: fadeInLeft,
-                delay: 0.7
-              },
-              {
-                icon: "📱",
-                title: "Omnichannel Presence",
-                description:
-                  "Consistent experience across web, mobile, and social platforms.",
-                variant: fadeInUp,
-                delay: 0.8
-              },
-              {
-                icon: "🤝",
-                title: "Dedicated Support",
-                description: "24/7 technical assistance from our expert team.",
-                variant: fadeInRight,
-                delay: 0.9
-              },
-            ].map((feature, index) => (
-              <MotionDiv
-                key={index}
-                variants={feature.variant}
-                custom={feature.delay}
-                transition={{ duration: 0.5, delay: feature.delay }}
-                whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                className="bg-slate-800/20 backdrop-blur-sm p-8 rounded-xl shadow-lg shadow-slate-950/20 hover:shadow-xl hover:bg-slate-800/30 transition-all duration-500 border border-slate-700/20 flex flex-col items-center text-center group"
-              >
-                <span className="text-4xl mb-6 block transform transition-transform duration-500 group-hover:scale-110">
-                  {feature.icon}
-                </span>
-                <h3 className="text-xl font-semibold mb-4 text-slate-50">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-300/90 leading-relaxed font-light">
-                  {feature.description}
-                </p>
-              </MotionDiv>
-            ))}
-          </div>
-
-          <MotionDiv 
-            variants={fadeInUp} 
-            transition={{ delay: 0.5 }}
-            className="mt-24 text-center"
-          >
-            <Link href="/dashboard" className="inline-flex">
-              <Button className="bg-violet-500/80 hover:bg-violet-500/90 text-white px-8 py-6 text-lg rounded-lg shadow-lg shadow-violet-500/5 hover:shadow-violet-500/10 transition-all duration-500 flex items-center gap-2 min-w-[250px] justify-center backdrop-blur-sm">
-                Explore All Features
-                <ArrowRightCircleIcon className="w-5 h-5" />
-              </Button>
-            </Link>
-          </MotionDiv>
-        </div>
-      </MotionSection>
-
-      {/* Section Divider */}
-      <div className="relative h-24 bg-slate-950 overflow-hidden">
-        <MotionDiv
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
-          className="absolute inset-0"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,230,255,0.15),_transparent_50%)]"></div>
-          <div className="absolute h-px w-full top-1/2 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent"></div>
-        </MotionDiv>
-      </div>
-
-      {/* Pricing Section */}
-      <MotionSection
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={containerVariants}
-        className="py-32 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950"
-        id="pricing"
-      >
-        <div className="container mx-auto px-4">
-          <MotionH2
-            variants={fadeInUp}
-            className="text-5xl font-bold text-center mb-6 text-slate-50"
-          >
-            Flexible Pricing Plans
-          </MotionH2>
-
-          <MotionP
-            variants={fadeInUp}
-            className="text-center text-slate-300/90 max-w-2xl mx-auto mb-24 font-light"
-          >
-            Choose the perfect plan that aligns with your business needs
-          </MotionP>
-
-          <div className="flex justify-center gap-8 flex-wrap mt-6 max-w-7xl mx-auto">
-            {pricingCards.map((card, index) => (
-              <MotionDiv
-                key={card.title}
-                variants={fadeInUp}
-                custom={index * 0.2}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-                whileHover={{ 
-                  y: -10, 
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                  transition: { duration: 0.3 } 
-                }}
-              >
-                <Card
-                  className={clsx(
-                    "w-[320px] flex flex-col justify-between min-h-[600px] backdrop-blur-sm border border-slate-700/20",
-                    {
-                      "bg-violet-500/10 shadow-xl shadow-violet-500/5":
-                        card.title === "ULTIMATE",
-                      "bg-slate-800/20 shadow-lg shadow-slate-950/20":
-                        card.title !== "ULTIMATE",
-                    }
-                  )}
-                >
-                  <CardHeader className="text-center pb-8">
-                    <CardTitle className="text-slate-50 text-2xl mb-3">
-                      {card.title}
-                    </CardTitle>
-                    <CardDescription className="text-slate-300/90 font-light">
-                      {card.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="text-center pb-8">
-                    <span className="text-4xl font-bold text-slate-50">
-                      {card.price}
-                    </span>
-                    <span className="text-slate-300/90 ml-2 font-light">
-                      <span>/ month</span>
-                    </span>
-                  </CardContent>
-                  <CardFooter className="flex flex-col items-start gap-6">
-                    <div className="space-y-4 flex-grow">
-                      {card.features.map((feature) => (
-                        <div key={feature} className="flex gap-3 items-center">
-                          <Check className="text-violet-300/80 w-5 h-5 flex-shrink-0" />
-                          <p className="text-slate-300/90 font-light">
-                            {feature}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    <Link
-                      href={`/dashboard?plan=${card.title.toLowerCase()}`}
-                      className={clsx(
-                        "w-full text-center font-medium rounded-lg py-4 transition-all duration-500 hover:scale-[1.02]",
-                        {
-                          "bg-violet-500/80 hover:bg-violet-500/90 text-white shadow-lg shadow-violet-500/5 hover:shadow-violet-500/10":
-                            card.title === "ULTIMATE",
-                          "bg-slate-800/50 hover:bg-slate-800/70 text-slate-200 border border-slate-700/20":
-                            card.title !== "ULTIMATE",
-                        }
-                      )}
-                    >
-                      Get Started
-                    </Link>
-                  </CardFooter>
-                </Card>
-              </MotionDiv>
-            ))}
-          </div>
-        </div>
-      </MotionSection>
-
-      {/* Section Divider */}
-      <div className="relative h-24 bg-slate-950 overflow-hidden">
-        <MotionDiv
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
-          className="absolute inset-0"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,0,255,0.1),_transparent_50%)]"></div>
-          <div className="absolute h-px w-full top-1/2 bg-gradient-to-r from-transparent via-fuchsia-500/20 to-transparent"></div>
-        </MotionDiv>
-      </div>
-
-      {/* News Section */}
-      <MotionSection
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={containerVariants}
-        className="py-32 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950"
-        id="news"
-      >
-        <div className="container mx-auto px-4">
-          <MotionH2
-            variants={fadeInUp}
-            className="text-5xl font-bold text-center mb-6 text-slate-50"
-          >
-            Latest Insights
-          </MotionH2>
-          <MotionP
-            variants={fadeInUp}
-            className="text-center text-slate-300/90 max-w-2xl mx-auto mb-24 font-light"
-          >
-            Stay updated with the latest trends in AI and customer service
-            innovation
-          </MotionP>
-
-          <div className="grid md:grid-cols-3 grid-cols-1 gap-8 max-w-7xl mx-auto">
-            {blogPosts &&
-              blogPosts.map((post, index) => (
-                <MotionDiv
-                  key={post.id}
-                  variants={fadeInUp}
-                  custom={index * 0.2}
-                  transition={{ duration: 0.5, delay: index * 0.2 }}
-                  whileHover={{ 
-                    y: -10, 
-                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                    transition: { duration: 0.3 } 
-                  }}
-                >
-                  <Link href={`${post.id}`}>
-                    <Card className="flex flex-col gap-2 rounded-xl overflow-hidden h-full bg-slate-800/20 backdrop-blur-sm border border-slate-700/20 shadow-lg shadow-slate-950/20 hover:shadow-xl hover:bg-slate-800/30 transition-all duration-500">
-                      <div className="relative w-full aspect-video overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10" />
-                        <Image
-                          src={post.image}
-                          alt="post featured image"
-                          fill
-                          style={{ objectFit: "cover" }}
-                          className="group-hover:scale-105 transition-transform duration-700"
-                        />
-                      </div>
-                      <div className="py-8 px-8 flex flex-col gap-4">
-                        <CardDescription className="text-slate-400/80 text-sm font-light">
-                          {getMonthName(new Date(post.createdAt).getMonth())}{" "}
-                          {new Date(post.createdAt).getDate()},{" "}
-                          {new Date(post.createdAt).getFullYear()}
-                        </CardDescription>
-                        <CardTitle className="text-xl text-slate-50 hover:text-violet-200 transition-colors duration-500">
-                          {post.title}
-                        </CardTitle>
-                        <div className="text-slate-300/90 leading-relaxed font-light">
-                          {parse(post.content.slice(0, 150) + "...")}
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                </MotionDiv>
-              ))}
-          </div>
-        </div>
-      </MotionSection>
-
-      {/* Scroll Progress Indicator */}
-      <MotionDiv
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-cyan-500 to-fuchsia-500 z-50 origin-left"
-        style={{ 
-          scaleX: 0,
-          opacity: 0.8,
-          boxShadow: "0 0 10px rgba(125, 58, 245, 0.5)"
-        }}
-        initial={{ scaleX: 0, opacity: 0 }}
-        whileInView={{ 
-          scaleX: [0, 1],
-          opacity: [0, 0.8]
-        }}
-        transition={{
-          duration: 0.8,
-          ease: "easeOut"
-        }}
-      />
-
-      {/* Enhanced Contact Section */}
-      <MotionSection
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={containerVariants}
-        className="relative"
-        id="contact"
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(125,58,245,0.1),_transparent_70%)]"></div>
-        <Contact />
-      </MotionSection>
-
-      <Footer />
-      <ChatbotIframe />
-    </div>
+    </SmoothScroll>
   );
 }
-
