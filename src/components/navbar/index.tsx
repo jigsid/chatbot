@@ -35,11 +35,11 @@ function NavBar() {
       className="fixed inset-x-0 top-0 z-50"
     >
       <div
-        className={`mx-auto mt-3 flex max-w-7xl items-center justify-between gap-3 rounded-2xl border px-4 py-2.5 transition-all duration-300 ${
+        className={`mx-auto mt-3 flex max-w-7xl items-center justify-between gap-3 rounded-2xl border px-5 py-2.5 transition-all duration-300 ${
           scrolled
             ? "border-white/10 bg-[#0A0A14]/80 shadow-[0_16px_50px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl"
             : "border-white/[0.06] bg-black/30 backdrop-blur-md"
-        } mx-3 sm:mx-6 lg:mx-auto`}
+        } mx-[7%] sm:mx-[11%] lg:mx-auto`}
       >
         <Link href="/" className="group flex items-center gap-2">
           <Image
@@ -102,7 +102,7 @@ function NavBar() {
         initial={{ height: 0, opacity: 0 }}
         animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
         transition={{ duration: 0.28 }}
-        className="mx-3 overflow-hidden md:hidden"
+        className="mx-[7%] overflow-hidden sm:mx-[11%] md:hidden"
       >
         <div className="mt-2 rounded-2xl border border-white/10 bg-[#0A0A14]/95 p-3 shadow-2xl backdrop-blur-xl">
           {links.map((l) => (

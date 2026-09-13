@@ -1,28 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Tilt from "react-parallax-tilt";
-import { Pause, Play, ShieldCheck, Sparkles, Bot, User } from "lucide-react";
+import { ShieldCheck, Sparkles, Bot, User } from "lucide-react";
 
-// Hero product visual — 3D tilt browser frame + live chat simulation
-// Tilt powered by https://github.com/mkosir/react-parallax-tilt
-export default function HeroVisual({
-  isPlaying,
-  onToggle,
-}: {
-  isPlaying: boolean;
-  onToggle: () => void;
-}) {
+// Hero product visual — static browser frame + live chat simulation (no tilt, no controls)
+export default function HeroVisual() {
   return (
-    <Tilt
-      tiltMaxAngleX={7}
-      tiltMaxAngleY={9}
-      perspective={1200}
-      scale={1.015}
-      transitionSpeed={1200}
-      gyroscope
-      className="relative w-full"
-    >
+    <div className="relative w-full">
       <div className="relative">
         <div
           aria-hidden
@@ -30,7 +14,7 @@ export default function HeroVisual({
         />
         <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-slate-950/90 shadow-[0_40px_120px_-30px_rgba(139,92,246,0.55)] backdrop-blur-xl">
           {/* browser chrome */}
-          <div className="flex items-center gap-2 border-b border-white/10 bg-black/50 px-4 py-3">
+          <div className="flex items-center gap-2 border-b border-white/10 bg-black/50 px-4 py-2.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
@@ -44,10 +28,9 @@ export default function HeroVisual({
           </div>
 
           <div className="grid gap-0 md:grid-cols-[1.15fr_0.85fr]">
-            {/* video */}
+            {/* video — autoplay only, no controls or overlays */}
             <div className="relative aspect-[16/10] bg-black">
               <video
-                id="chatbot-video"
                 className="h-full w-full object-cover"
                 autoPlay
                 muted
@@ -57,17 +40,6 @@ export default function HeroVisual({
                 <source src="/chatbot.mp4" type="video/mp4" />
               </video>
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
-              <button
-                onClick={onToggle}
-                aria-label={isPlaying ? "Pause demo" : "Play demo"}
-                className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 opacity-90 backdrop-blur-xl transition hover:scale-105 hover:opacity-100"
-              >
-                {isPlaying ? (
-                  <Pause className="h-5 w-5 text-white" />
-                ) : (
-                  <Play className="ml-0.5 h-5 w-5 text-white" />
-                )}
-              </button>
               <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-3 py-1.5 text-[11px] text-white backdrop-blur-xl">
                 <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
                 Live AI resolving in 0.2s
@@ -75,7 +47,7 @@ export default function HeroVisual({
             </div>
 
             {/* chat mock */}
-            <div className="relative flex flex-col gap-3 border-t border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent p-5 md:border-l md:border-t-0">
+            <div className="relative flex flex-col gap-3 border-t border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent p-4 md:border-l md:border-t-0">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 shadow-lg">
                   <Bot className="h-[18px] w-[18px] text-white" />
@@ -140,33 +112,23 @@ export default function HeroVisual({
           </div>
         </div>
 
-        {/* floating badges */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="absolute -bottom-5 -left-3 hidden items-center gap-2.5 rounded-2xl border border-white/15 bg-slate-900/90 px-4 py-3 shadow-2xl backdrop-blur-xl sm:flex"
-        >
+        {/* static badges (no motion offsets that add bulk) */}
+        <div className="absolute -bottom-5 -left-3 hidden items-center gap-2.5 rounded-2xl border border-white/15 bg-slate-900/90 px-4 py-3 shadow-2xl backdrop-blur-xl sm:flex">
           <ShieldCheck className="h-5 w-5 text-emerald-400" />
           <div>
             <p className="text-[13px] font-semibold text-white">Enterprise security</p>
             <p className="text-[11px] text-slate-400">Bank-grade encryption</p>
           </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 16 }}
-          animate={{ opacity: 1, y: 0, x: 0 }}
-          transition={{ delay: 1.1 }}
-          className="absolute -right-3 -top-5 hidden items-center gap-3 rounded-2xl border border-white/15 bg-slate-900/90 px-4 py-3 shadow-2xl backdrop-blur-xl lg:flex"
-        >
+        </div>
+        <div className="absolute -right-3 -top-5 hidden items-center gap-3 rounded-2xl border border-white/15 bg-slate-900/90 px-4 py-3 shadow-2xl backdrop-blur-xl lg:flex">
           <div className="text-right">
             <p className="text-[11px] text-slate-400">Resolution rate</p>
             <p className="text-lg font-bold text-white">
               98% <span className="text-xs font-medium text-cyan-300">auto-resolved</span>
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </Tilt>
+    </div>
   );
 }

@@ -18,13 +18,12 @@ import {
   Lock,
   MessagesSquare,
   Play,
-  Pause,
   Plug,
   Quote,
-  ShieldCheck,
   Sparkles,
   Star,
   Workflow,
+  X,
   Zap,
 } from "lucide-react";
 import Image from "next/image";
@@ -33,9 +32,8 @@ import parse from "html-react-parser";
 import { getMonthName } from "@/lib/utils";
 import Contact from "@/components/contact";
 import ChatbotIframe from "./ChatbotIframe";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState } from "react";
-import CountUp from "react-countup";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import SmoothScroll from "@/components/landing/smooth-scroll";
 import ScrollProgress from "@/components/landing/scroll-progress";
 import ParticleField from "@/components/landing/particle-field";
@@ -43,14 +41,6 @@ import { Reveal, SectionHeading } from "@/components/landing/reveal";
 import SpotlightCard from "@/components/landing/spotlight-card";
 import { Magnetic } from "@/components/landing/magnetic";
 import LogoMarquee from "@/components/landing/logo-marquee";
-import HeroVisual from "@/components/landing/hero-visual";
-
-const heroStats = [
-  { value: 500, suffix: "+", label: "Active businesses", sub: "and growing weekly" },
-  { value: 1, suffix: "M+", label: "Messages resolved", sub: "with context intact", decimals: 0 },
-  { value: 0.2, suffix: "s", label: "Median response", sub: "low-latency edge", decimals: 1 },
-  { value: 98, suffix: "%", label: "Satisfaction", sub: "auto-resolved chats", decimals: 0 },
-];
 
 const featureCards = [
   {
@@ -171,170 +161,184 @@ const testimonials = [
   },
 ];
 
-function Hero({ isPlaying, onToggle }: { isPlaying: boolean; onToggle: () => void }) {
+function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
   const yFg = useTransform(scrollYProgress, [0, 1], ["0%", "-6%"]);
   const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
+  const scaleBg = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const [showFilm, setShowFilm] = useState(false);
+
+  // ESC to close the film pop-out + lock page scroll while it's open
+  useEffect(() => {
+    if (!showFilm) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowFilm(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.documentElement.style.overflow = prev;
+    };
+  }, [showFilm]);
+
   return (
-    <section ref={ref} className="relative flex min-h-screen items-center overflow-hidden bg-[#050508] pb-16 pt-32">
-      {/* ——— ATMOSPHERE: aurora + grid + particles = "another world" ——— */}
-      <motion.div style={{ y: yBg }} className="absolute inset-0" aria-hidden>
-        <div className="animate-aurora absolute -top-40 left-1/2 h-[560px] w-[900px] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[140px]" />
-        <div className="animate-aurora-slow absolute -left-40 top-1/3 h-[480px] w-[480px] rounded-full bg-cyan-500/15 blur-[130px]" />
-        <div className="animate-aurora absolute -right-40 bottom-0 h-[520px] w-[520px] rounded-full bg-fuchsia-600/15 blur-[130px]" />
-        <div className="landing-grid-dark absolute inset-0" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,transparent_30%,#050508_78%)]" />
-      </motion.div>
-      <div className="absolute inset-0 opacity-70" aria-hidden>
-        <ParticleField density={60} />
+    <section ref={ref} className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#050508] px-[7%] py-3 sm:px-[11%] sm:py-5 lg:py-7">
+      {/* ——— ambient glow breathing around the frame ——— */}
+      <div aria-hidden className="absolute inset-0">
+        <div className="animate-aurora absolute -top-32 left-1/2 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-[130px]" />
+        <div className="animate-aurora-slow absolute bottom-0 right-0 h-[360px] w-[360px] rounded-full bg-cyan-500/10 blur-[120px]" />
+      </div>
+      <div className="absolute inset-0 opacity-50" aria-hidden>
+        <ParticleField density={35} />
       </div>
 
-      <motion.div style={{ y: yFg, opacity: fade }} className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6">
-        <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
-          {/* Copy */}
-          <div className="lg:col-span-6">
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2.5 rounded-full border border-white/12 bg-white/[0.06] py-1.5 pl-1.5 pr-4 text-[13px] text-slate-200 shadow-xl backdrop-blur-xl"
-            >
-              <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
-                <Sparkles className="h-3 w-3" /> New
-              </span>
-              AI reps that book, sell & support — 24/7
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-            </motion.div>
+      {/* ——— CINEMATIC FRAME: inset video panel with border + space on all sides ——— */}
+      <motion.div
+        style={{ y: yBg, scale: scaleBg }}
+        className="absolute inset-x-[7%] bottom-3 top-3 overflow-hidden rounded-[26px] border border-white/15 shadow-[0_50px_140px_-40px_rgba(139,92,246,0.45)] sm:inset-x-[11%] sm:bottom-5 sm:top-5 lg:bottom-7 lg:top-7"
+        aria-hidden={!showFilm}
+      >
+        <video
+          className="h-full w-full scale-105 object-cover blur-[3px]"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="/chatbot.mp4" type="video/mp4" />
+        </video>
+        {/* cinematic grade inside the frame */}
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050508]/90 via-[#050508]/35 to-[#050508]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_65%_at_50%_45%,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
+        <div className="absolute inset-0 bg-noise opacity-[0.05] mix-blend-soft-light" />
+        {/* inner hairline for a premium framed feel */}
+        <div className="pointer-events-none absolute inset-0 rounded-[26px] ring-1 ring-inset ring-white/10" />
+      </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 26, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="mt-6 text-balance text-5xl font-bold leading-[1.02] tracking-tight text-white sm:text-6xl xl:text-7xl"
-            >
-              Step into a world where
-              <span className="text-gradient block">customers never wait.</span>
-            </motion.h1>
+      {/* ——— CENTERED FEATURE PRESENTATION ——— */}
+      <motion.div
+        style={{ y: yFg, opacity: fade }}
+        className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center px-6 py-28 text-center sm:px-10"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/40 py-1.5 pl-1.5 pr-4 text-[13px] text-slate-200 shadow-2xl backdrop-blur-xl"
+        >
+          <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+            <Sparkles className="h-3 w-3" /> New
+          </span>
+          AI reps that book, sell & support — 24/7
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+        </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.22 }}
-              className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-slate-300/90"
-            >
-              SmartRep AI is the conversational platform that resolves inquiries, books
-              appointments, and takes payments — trained on your business, live on your
-              site in minutes.
-            </motion.p>
+        <motion.h1
+          initial={{ opacity: 0, y: 26, filter: "blur(8px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="mt-6 text-balance text-5xl font-bold leading-[1.03] tracking-tight text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)] sm:text-6xl xl:text-7xl"
+        >
+          Step into a world where
+          <span className="text-gradient block">customers never wait.</span>
+        </motion.h1>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.32 }}
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
-            >
-              <Magnetic>
-                <Link href="/dashboard">
-                  <Button className="group relative h-[52px] w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-8 py-6 text-base font-semibold text-white shadow-[0_16px_50px_-12px_rgba(139,92,246,0.7)] transition hover:shadow-[0_20px_70px_-12px_rgba(139,92,246,0.9)] sm:w-auto">
-                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                    <span className="relative flex items-center gap-2">
-                      Start free trial <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-1" />
-                    </span>
-                  </Button>
-                </Link>
-              </Magnetic>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.22 }}
+          className="mt-5 max-w-2xl text-pretty text-base leading-relaxed text-slate-200/90 drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)] sm:text-lg"
+        >
+          SmartRep AI resolves inquiries, books appointments, and takes payments —
+          trained on your business, live on your site in minutes.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.32 }}
+          className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+        >
+          <Magnetic>
+            <Link href="/dashboard">
+              <Button className="group relative h-[52px] w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-8 py-6 text-base font-semibold text-white shadow-[0_16px_50px_-12px_rgba(139,92,246,0.7)] transition hover:shadow-[0_20px_70px_-12px_rgba(139,92,246,0.9)] sm:w-auto">
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="relative flex items-center gap-2">
+                  Start free trial <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-1" />
+                </span>
+              </Button>
+            </Link>
+          </Magnetic>
               <Button
                 variant="outline"
-                onClick={onToggle}
-                className="h-[52px] rounded-xl border-white/15 bg-white/[0.06] px-8 py-6 text-base text-white backdrop-blur-xl transition hover:border-white/30 hover:bg-white/10"
+                onClick={() => setShowFilm(true)}
+                className="h-[52px] w-full rounded-xl border-white/25 bg-black/40 px-8 py-6 text-base text-white backdrop-blur-xl transition hover:border-white/40 hover:bg-black/60 sm:w-auto"
               >
-                {isPlaying ? <Pause className="mr-2 h-[18px] w-[18px]" /> : <Play className="mr-2 h-[18px] w-[18px]" />}
-                {isPlaying ? "Pause live demo" : "Watch live demo"}
+                <Play className="mr-2 h-[18px] w-[18px]" />
+                Watch the actual video
               </Button>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.7 }}
-              className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3"
-            >
-              <div className="flex -space-x-2.5">
-                {["AK", "JM", "RS", "TW"].map((t, i) => (
-                  <div
-                    key={t}
-                    className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#050508] text-[11px] font-bold text-white ${
-                      ["bg-violet-600", "bg-cyan-600", "bg-fuchsia-600", "bg-emerald-600"][i]
-                    }`}
-                  >
-                    {t}
-                  </div>
-                ))}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.7 }}
+          className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+        >
+          <div className="flex -space-x-2.5">
+            {["AK", "JM", "RS", "TW"].map((t, i) => (
+              <div
+                key={t}
+                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#050508] text-[11px] font-bold text-white ${
+                  ["bg-violet-600", "bg-cyan-600", "bg-fuchsia-600", "bg-emerald-600"][i]
+                }`}
+              >
+                {t}
               </div>
-              <div>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  ))}
-                  <span className="ml-1.5 text-sm font-semibold text-white">4.9/5</span>
-                </div>
-                <p className="text-[13px] text-slate-400">Loved by 500+ modern businesses</p>
-              </div>
-              <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-[12px] text-slate-300 sm:flex">
-                <BadgeCheck className="h-4 w-4 text-emerald-400" /> No credit card required
-              </div>
-            </motion.div>
+            ))}
           </div>
-
-          {/* Visual */}
-          <motion.div
-            initial={{ opacity: 0, y: 36, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.25 }}
-            className="lg:col-span-6"
-          >
-            <HeroVisual isPlaying={isPlaying} onToggle={onToggle} />
-            <div className="mt-8 flex flex-wrap gap-2.5">
-              {["Self-learning", "Multi-modal", "0.2s latency", "Enterprise-ready"].map((t) => (
-                <span
-                  key={t}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-medium text-slate-200 backdrop-blur"
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
-                  {t}
-                </span>
+          <div className="text-left">
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
               ))}
+              <span className="ml-1.5 text-sm font-semibold text-white">4.9/5</span>
             </div>
-          </motion.div>
-        </div>
+            <p className="text-[13px] text-slate-300">Loved by modern businesses</p>
+          </div>
+          <div className="hidden items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3.5 py-1.5 text-[12px] text-slate-200 backdrop-blur-xl sm:flex">
+            <BadgeCheck className="h-4 w-4 text-emerald-400" /> No credit card required
+          </div>
+        </motion.div>
 
-        {/* Stats */}
-        <div className="mt-16 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {heroStats.map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55 + i * 0.1, duration: 0.6 }}
-              className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center backdrop-blur-xl transition hover:border-white/20 hover:bg-white/[0.07]"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.65, duration: 0.7 }}
+          className="mt-8 flex flex-wrap justify-center gap-2.5"
+        >
+          {["Self-learning", "Multi-modal", "0.2s latency", "Enterprise-ready"].map((t) => (
+            <span
+              key={t}
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3.5 py-1.5 text-[12px] font-medium text-slate-200 backdrop-blur-xl"
             >
-              <p className="text-3xl font-bold tracking-tight text-white">
-                <CountUp end={s.value} decimals={s.decimals ?? 0} duration={2} suffix={s.suffix} enableScrollSpy scrollSpyOnce />
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-200">{s.label}</p>
-              <p className="text-xs text-slate-400">{s.sub}</p>
-            </motion.div>
+              <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
+              {t}
+            </span>
           ))}
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* scroll cue */}
       <div className="absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 md:flex">
-        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-slate-500">Scroll to explore</span>
-        <div className="flex h-11 w-7 justify-center rounded-full border border-white/15 bg-white/[0.03] p-1.5">
+        <span className="text-[11px] font-medium uppercase tracking-[0.28em] text-slate-400">Scroll to explore</span>
+        <div className="flex h-11 w-7 justify-center rounded-full border border-white/20 bg-black/40 p-1.5 backdrop-blur">
           <motion.div
             animate={{ y: [0, 18, 0], opacity: [1, 0.2, 1] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
@@ -342,24 +346,56 @@ function Hero({ isPlaying, onToggle }: { isPlaying: boolean; onToggle: () => voi
           />
         </div>
       </div>
+
+      {/* ——— film pop-out: the actual unblurred video ——— */}
+      <AnimatePresence>
+        {showFilm && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-8" role="dialog" aria-modal="true" aria-label="Actual product video">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setShowFilm(false)}
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 28 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              className="relative w-full max-w-4xl overflow-hidden rounded-2xl border border-white/15 bg-black shadow-[0_60px_160px_-30px_rgba(139,92,246,0.5)]"
+            >
+              <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.04] px-4 py-3">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
+                  SmartRep AI — the actual film
+                </p>
+                <button
+                  onClick={() => setShowFilm(false)}
+                  aria-label="Close video"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition hover:border-white/35 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <video
+                src="/chatbot.mp4"
+                controls
+                autoPlay
+                playsInline
+                preload="auto"
+                className="aspect-video w-full bg-black"
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
 
 export default function Home() {
-  const [isPlaying, setIsPlaying] = useState(true);
-  const toggleVideo = () => {
-    const video = document.getElementById("chatbot-video") as HTMLVideoElement | null;
-    if (!video) return;
-    if (video.paused) {
-      video.play();
-      setIsPlaying(true);
-    } else {
-      video.pause();
-      setIsPlaying(false);
-    }
-  };
-
   return (
     <SmoothScroll>
       <div className="min-h-screen bg-white text-slate-950 antialiased">
@@ -367,13 +403,13 @@ export default function Home() {
         <NavBar />
 
         <main>
-          <Hero isPlaying={isPlaying} onToggle={toggleVideo} />
+          <Hero />
           <LogoMarquee />
 
           {/* ═══ WORLD 2 — LIGHT · porcelain studio ═══ */}
           <section id="features" className="relative overflow-hidden bg-[#FAFAF8] py-24 sm:py-32">
             <div aria-hidden className="landing-grid absolute inset-0 opacity-70 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)]" />
-            <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="relative mx-auto max-w-7xl px-[7%] sm:px-[11%]">
               <SectionHeading
                 eyebrow="Enterprise features"
                 title={<>Everything you need to <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">support, sell & scale</span></>}
@@ -405,7 +441,7 @@ export default function Home() {
               <div className="animate-aurora-slow absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-cyan-500/10 blur-[130px]" />
               <div className="landing-grid-dark absolute inset-0" />
             </div>
-            <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="relative mx-auto max-w-7xl px-[7%] sm:px-[11%]">
               <div className="grid items-center gap-14 lg:grid-cols-2">
                 <div>
                   <SectionHeading
@@ -447,7 +483,7 @@ export default function Home() {
                 <Reveal delay={0.15}>
                   <div className="relative">
                     <div aria-hidden className="absolute -inset-5 rounded-[28px] bg-gradient-to-br from-cyan-500/20 to-violet-600/25 blur-3xl" />
-                    <div className="relative rounded-3xl border border-white/12 bg-slate-950/80 p-6 shadow-2xl backdrop-blur-xl">
+                    <div className="relative rounded-3xl border border-white/10 bg-slate-950/80 p-6 shadow-2xl backdrop-blur-xl">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400">
@@ -558,7 +594,7 @@ export default function Home() {
 
           {/* ═══ WORLD 5 — LIGHT · social proof ═══ */}
           <section className="relative border-y border-slate-900/10 bg-[#F4F4F2] py-24 sm:py-28">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="mx-auto max-w-7xl px-[7%] sm:px-[11%]">
               <SectionHeading
                 eyebrow="Loved in production"
                 title="Teams feel the difference in week one"
@@ -587,7 +623,7 @@ export default function Home() {
 
           {/* ═══ WORLD 6 — LIGHT · insights ═══ */}
           <section id="news" className="bg-white py-24 sm:py-32">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="mx-auto max-w-7xl px-[7%] sm:px-[11%]">
               <SectionHeading
                 eyebrow="Latest insights"
                 title="Learn the playbooks behind great CX"
@@ -636,7 +672,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_100%,rgba(34,211,238,0.12),transparent_70%)]" />
               <div className="landing-grid-dark absolute inset-0 opacity-80" />
             </div>
-            <div className="relative mx-auto max-w-5xl px-4 text-center sm:px-6">
+            <div className="relative mx-auto max-w-5xl px-[7%] text-center sm:px-[11%]">
               <Reveal>
                 <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-cyan-200 backdrop-blur">
                   <Bot className="h-3.5 w-3.5" /> Ready when you are

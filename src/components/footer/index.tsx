@@ -31,7 +31,7 @@ const Footer = () => {
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[720px] -translate-x-1/2 rounded-full bg-violet-700/20 blur-[120px]"
       />
-      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      <div className="relative mx-auto max-w-7xl px-[7%] py-14 sm:px-[11%]">
         <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
           <div>
             <Link href="/" className="flex items-center gap-2">
